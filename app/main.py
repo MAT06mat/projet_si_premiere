@@ -2,7 +2,7 @@ from kivy.app import App
 from kivy.core.window import Window
 
 
-class VeloApp(App):
+class SafeCyclingApp(App):
     icon = "images/icon.png"
     
     def build(self):
@@ -10,4 +10,4 @@ class VeloApp(App):
 
 
 if __name__ == '__main__':
-    VeloApp().run()
+    SafeCyclingApp().run()
