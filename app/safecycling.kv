@@ -1,0 +1,22 @@
+#:import boxlayout_with_action_bar boxlayout_with_action_bar
+
+
+<MyScreenManager>:
+    Screen:
+        name: "Connection"
+        BoxLayout:
+    Screen:
+        name: "MainMenu"
+        BoxLayout:
+    TransitionScreen:
+        name: "TransitionScreen"
+        BlackScreen:
+
+
+<BlackScreen@BoxLayout>:
+    canvas.before:
+        Color:
+            rgba: (0, 0, 0, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
