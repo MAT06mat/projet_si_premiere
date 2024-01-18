@@ -1,6 +1,7 @@
 from kivy.properties import ObjectProperty
 from kivy.app import App
 from kivy.core.window import Window
+Window.size = (260, 570)
 
 from navigation_screen_manager import NavigationScreenManager
 

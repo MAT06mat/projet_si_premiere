@@ -4,6 +4,12 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.metrics import dp
 
+from custom_resize_button import CustomResizeButton
+
+
+class CustomResizeButton(CustomResizeButton):
+    pass
+
 
 Builder.load_file("boxlayout_with_action_bar.kv")
 

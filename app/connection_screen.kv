@@ -1,0 +1,32 @@
+<AnimateImage>:
+    size_hint: (1, None)
+    fit_mode: "cover"
+    height: self.width * 1.75
+
+<ConnectMessage>:
+    size_hint: (0.8, None)
+    height: self.width / 10
+    font_size: self.width / 15
+    canvas.before:
+        Color:
+            rgba: (1, 0.1, 0, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [self.height / 2, ]
+
+<ConnectButton>:
+    height: self.width * 0.25
+
+<ConnectLabel>:
+    font_size: self.width / 16
+    text_size: (self.width, None)
+    text: f"[color=010101][b][size={int(self.width/13)}]{self.custom_test}"
+
+<Background>:
+    canvas:
+        Color:
+            rgba: (0.9, 0.9, 0.9, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
