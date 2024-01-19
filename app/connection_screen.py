@@ -18,8 +18,7 @@ class AnimateImage(Image):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.opacity = 0
-        self.anim = Animation(d=0.5, opacity=0)
-        self.anim += Animation(d=0.5, opacity=1)
+        self.anim = Animation(d=0.5, opacity=1)
         self.anim += Animation(d=2, opacity=1)
         if self.pos_hint == {"top": 1}:
             self.anim += Animation(d=2, pos_hint={"top": 2}, t='in_cubic') & Animation(d=3, opacity=0)
@@ -32,10 +31,10 @@ class ConnectMessage(Label):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.opacity = 0
-        self.pos_hint = {"top": 1, "center_x": 0.5}
-        self.anim = Animation(d=1, pos_hint={"top": 0.96, "center_x": 0.5}, t='in_out_cubic')
+        self.pos_hint = {"top": 1.1, "center_x": 0.5}
+        self.anim = Animation(d=1, pos_hint={"top": 0.98, "center_x": 0.5}, t='in_out_cubic')
         self.anim_2 = Animation(d=0.5, opacity=0) + Animation(d=0.5, opacity=1, t='in_out_cubic')
-        self.anim_reverse = Animation(d=1, pos_hint={"top": 1, "center_x": 0.5}, t='in_out_cubic') & Animation(d=0.5, opacity=0, t='in_out_cubic')
+        self.anim_reverse = Animation(d=1, pos_hint={"top": 1.1, "center_x": 0.5}, t='in_out_cubic') & Animation(d=0.5, opacity=0, t='in_out_cubic')
         self.last_event = Clock.schedule_once(self.stopped_message, 10.0)
         self.last_event.cancel()
 
@@ -51,21 +50,32 @@ class ConnectMessage(Label):
 
 
 class ConnectLabel(Label):
-    custom_test = """Bienvenue sur Safe Cycling[/size][/b][/color]\n\n
-[color=6c6c6c]Pour continuer vous devez vous connecter à un appareil allumé.\n
-Vérifiez que votre bluetooth est bien activé et que le périphérique est bien appairé.[/color]"""
-    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.size_hint = (0.8, 0.4)
-        self.pos_hint = {"center_x": 0.5, "center_y": 0.65}
         self.valign = "center"
         self.halign = "center"
         self.markup = True
         self.opacity = 0
-        self.anim = Animation(d=5, opacity=0)
+        self.anim = Animation(d=4.5, opacity=0)
         self.anim += Animation(d=1, opacity=1, t='in_out_cubic')
         self.anim.start(self)
+
+
+class ConnectTitle(ConnectLabel):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.pos_hint = {"center_x": 0.5}
+        self.size_hint = (0.8, 0.1)
+        self.text = "[color=010101][b]Bienvenue sur Safe Cycling[/b][/color]"
+
+
+class ConnectDescription(ConnectLabel):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.size_hint = (0.9, None)
+        self.pos_hint = {"center_x": 0.5, "center_y": 0.65}
+        self.text = """[color=202020]Pour continuer vous devez vous connecter à un appareil allumé.\n
+Vérifiez que votre bluetooth est bien activé et que le périphérique est bien appairé.[/color]"""
 
 
 class ConnectButton(CustomResizeButton):
@@ -75,16 +85,16 @@ class ConnectButton(CustomResizeButton):
         super().__init__(**kwargs)
         self.source = "images/connect_button.png"
         self.size_hint = (0.5, None)
-        self.pos_hint = {"center_x": 0.5, "center_y": 0.3}
+        self.pos_hint = {"center_x": 0.5, "center_y": 0.25}
         self.opacity = 0
-        self.animation = Animation(d=5, opacity=0)
+        self.animation = Animation(d=4.5, opacity=0)
         self.animation += Animation(d=1, opacity=1, t='in_out_cubic')
         self.animation.start(self)
-        self.animations_click_self = Animation(d=1, pos_hint={"center_x": 0.5, "center_y": 0.36}, t='in_out_cubic')
-        self.animations_click_loading = Animation(d=1, pos_hint={"center_x": 0.5, "center_y": 0.24}, t='in_out_cubic')
-        self.animations_click_loading &= Animation(d=1.5, opacity=1, t='in_out_cubic')
-        self.animations_click_reverse_self = Animation(d=1, pos_hint={"center_x": 0.5, "center_y": 0.3}, t='in_out_cubic')
-        self.animations_click_reverse_loading = Animation(d=0.5, pos_hint={"center_x": 0.5, "center_y": 0.3}, t='in_out_cubic')
+        self.animations_click_self = Animation(d=0.5, pos_hint={"center_x": 0.5, "center_y": 0.32}, t='in_out_cubic')
+        self.animations_click_loading = Animation(d=0.5, pos_hint={"center_x": 0.5, "center_y": 0.18}, t='in_out_cubic')
+        self.animations_click_loading &= Animation(d=1, opacity=1, t='in_out_cubic')
+        self.animations_click_reverse_self = Animation(d=1, pos_hint={"center_x": 0.5, "center_y": 0.25}, t='in_out_cubic')
+        self.animations_click_reverse_loading = Animation(d=0.5, pos_hint={"center_x": 0.5, "center_y": 0.25}, t='in_out_cubic')
         self.animations_click_reverse_loading &= Animation(d=0.5, opacity=0, t='in_out_cubic')
         self.last_event = Clock.schedule_once(self.stopped_loading, 10.0)
         self.last_event.cancel()
@@ -98,13 +108,13 @@ class ConnectButton(CustomResizeButton):
         self.last_event = Clock.schedule_once(self.stopped_loading, 20.0)
     
     def stopped_loading(self, *args):
+        Clock.schedule_once(self.reverse_anim, 0.5)
+        self.parent.connect_message.message("Aucun appareil n'est détecté")
+    
+    def reverse_anim(self, *args):
         self.animations_click_reverse_self.start(self)
         self.animations_click_reverse_loading.start(self.parent.loading)
-        Clock.schedule_once(self.send_error_message, 0.5)
         self.loading = False
-    
-    def send_error_message(self, *args):
-        self.parent.connect_message.message("Aucun appareil n'a été détecté")
 
 
 class Loading(Widget):
@@ -112,7 +122,7 @@ class Loading(Widget):
         super().__init__(**kwargs)
         self.opacity = 0
         self.size_hint = (0.15, None)
-        self.pos_hint = {"center_x": 0.5, "center_y": 0.3}
+        self.pos_hint = {"center_x": 0.5, "center_y": 0.25}
         self.angle_void = 0
         self.anim = Animation(d=3, angle_void=360, t='in_out_sine') + Animation(d=3, angle_void=0, t='in_out_sine')
         self.anim.repeat = True
@@ -130,12 +140,27 @@ class Loading(Widget):
             Line(circle=(self.center_x, self.center_y, self.width/2, self.angle_turn, self.angle_turn + self.angle_void), width=self.width*0.04)
 
 
+class SettingButton(CustomResizeButton):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.source = "images/setting_button.png"
+        self.pos_hint = {'top': 1, 'right': 1}
+        self.size_hint = (0.1, None)
+        self.opacity = 0
+        self.animation = Animation(d=4.5, opacity=0)
+        self.animation += Animation(d=1, opacity=1, t='in_out_cubic')
+        self.animation.start(self)
+    
+    def on_custom_press(self, *args):
+        return super().on_custom_press(*args)
+
+
 class Background(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.opacity = 0
         self.size_hint = (1, 1)
-        self.anim = Animation(d=4, opacity=0)
+        self.anim = Animation(d=3.5, opacity=0)
         self.anim += Animation(d=1, opacity=1, t='in_out_cubic')
         self.anim.start(self)
 
@@ -143,17 +168,21 @@ class Background(Widget):
 class ConnectionScreen(RelativeLayout):
     def __init__(self, **kw):
         super().__init__(**kw)
-        self.background = Background()
+        # self.background = Background()
         self.animate_image_top = AnimateImage(source="images/background_top.png", pos_hint={"top": 1})
         self.animate_image_bottom = AnimateImage(source="images/background_bottom.png", pos_hint={"y": 0})
         self.connect_message = ConnectMessage()
+        self.setting_button = SettingButton()
         self.connect_button = ConnectButton()
-        self.connect_label = ConnectLabel()
+        self.connect_title = ConnectTitle()
+        self.connect_description = ConnectDescription()
         self.loading = Loading()
-        self.add_widget(self.background)
+        # self.add_widget(self.background)
         self.add_widget(self.animate_image_top)
         self.add_widget(self.animate_image_bottom)
         self.add_widget(self.connect_message)
+        self.add_widget(self.setting_button)
         self.add_widget(self.connect_button)
-        self.add_widget(self.connect_label)
+        self.add_widget(self.connect_title)
+        self.add_widget(self.connect_description)
         self.add_widget(self.loading)

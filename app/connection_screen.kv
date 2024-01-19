@@ -6,10 +6,10 @@
 <ConnectMessage>:
     size_hint: (0.8, None)
     height: self.width / 10
-    font_size: self.width / 15
+    font_size: self.width / 18
     canvas.before:
         Color:
-            rgba: (1, 0.1, 0, 1)
+            rgba: (1, 0.22, 0.11, 1)
         RoundedRectangle:
             pos: self.pos
             size: self.size
@@ -19,9 +19,18 @@
     height: self.width * 0.25
 
 <ConnectLabel>:
-    font_size: self.width / 16
     text_size: (self.width, None)
-    text: f"[color=010101][b][size={int(self.width/13)}]{self.custom_test}"
+
+<ConnectTitle>:
+    font_size: self.width / 13
+    y: self.parent.connect_description.top if self.parent else 0
+
+<ConnectDescription>:
+    font_size: self.width / 18
+    height: self.texture_size[1]
+
+<SettingButton>:
+    height: self.width * 1.66
 
 <Background>:
     canvas:
