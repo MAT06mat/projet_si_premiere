@@ -123,12 +123,12 @@ class Loading(Widget):
         self.opacity = 0
         self.size_hint = (0.15, None)
         self.pos_hint = {"center_x": 0.5, "center_y": 0.25}
-        self.angle_void = 0
-        self.anim = Animation(d=3, angle_void=360, t='in_out_sine') + Animation(d=3, angle_void=0, t='in_out_sine')
+        self.angle_void = 10
+        self.anim = Animation(d=3, angle_void=350, t='in_out_sine') + Animation(d=3, angle_void=10, t='in_out_sine')
         self.anim.repeat = True
         self.anim.start(self)
         self.angle_turn = 0
-        self.anim_2 = Animation(d=1.4, angle_turn=360) + Animation(d=-1.4, angle_turn=0)
+        self.anim_2 = Animation(d=1, angle_turn=360) + Animation(d=-1, angle_turn=0)
         self.anim_2.repeat = True
         self.anim_2.start(self)
         Clock.schedule_interval(self.loop, 1/60)
