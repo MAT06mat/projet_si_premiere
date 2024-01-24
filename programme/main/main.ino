@@ -7,22 +7,28 @@ SoftwareSerial blueToothSerial(RxD,TxD);
 
 void setup(){
     Serial.begin(9600);
+    Serial.println("Démarrage en cours");
     pinMode(RxD, INPUT);
     pinMode(TxD, OUTPUT);
     pinMode(PINLED, OUTPUT);
     setupBlueToothConnection();
+    Serial.println("Démarrage ternimé");
 }
 
 void loop(){
-    int recu;    
-    Serial.println("Demarrage");  
+    byte recu;
     while(1){
         if(blueToothSerial.available()>0){
            while(blueToothSerial.available()) {
-              recu = blueToothSerial.read();
+            byte recu = blueToothSerial.read();
+            char charRecu = static_cast<char>(recu);
+            if (charRecu == '#') {
+              Serial.println();
+            } else {
+               Serial.print(charRecu);
             }
-         Serial.println(recu);
-         }      
+          }
+       }   
     }
 }
 

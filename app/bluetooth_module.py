@@ -8,8 +8,8 @@ s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM
 s.connect((ADRESSE, port))
 print("Connected. Type something...")
 while 1:
-    text = input()
+    text = input("Send : ")
     if text == "quit":
         break
-    s.send(bytes(text, 'UTF-8'))
+    s.send(bytes(text + '#', 'UTF-8'))
 s.close()
