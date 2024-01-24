@@ -17,19 +17,26 @@ void setup(){
 
 void loop(){
     byte recu;
-    while(1){
-        if(blueToothSerial.available()>0){
-           while(blueToothSerial.available()) {
-            byte recu = blueToothSerial.read();
-            char charRecu = static_cast<char>(recu);
-            if (charRecu == '#') {
-              Serial.println();
-            } else {
-               Serial.print(charRecu);
-            }
-          }
-       }   
-    }
+    if(blueToothSerial.available()>0){
+       while(blueToothSerial.available()) {
+        byte recu = blueToothSerial.read();
+        char charRecu = static_cast<char>(recu);
+        if (charRecu == '#') {
+          Serial.println();
+        } else {
+           Serial.print(charRecu);
+        }
+      }
+   }
+   if (Serial.available() > 0) {
+    String text = Serial.readString();
+    bluetooth_send(text);
+   }
+}
+
+void bluetooth_send(const String& text) {
+  blueToothSerial.print(text);
+  blueToothSerial.print('#');
 }
 
 void setupBlueToothConnection(){
