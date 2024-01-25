@@ -9,6 +9,8 @@ from kivy.clock import Clock
 
 
 from custom_resize_button import CustomResizeButton
+from bluetooth import BlueTooth, Api
+import threading, asyncio
 
 
 Builder.load_file("connection_screen.kv")
@@ -96,20 +98,24 @@ class ConnectButton(CustomResizeButton):
         self.animations_click_reverse_self = Animation(d=1, pos_hint={"center_x": 0.5, "center_y": 0.25}, t='in_out_cubic')
         self.animations_click_reverse_loading = Animation(d=0.5, pos_hint={"center_x": 0.5, "center_y": 0.25}, t='in_out_cubic')
         self.animations_click_reverse_loading &= Animation(d=0.5, opacity=0, t='in_out_cubic')
-        self.last_event = Clock.schedule_once(self.stopped_loading, 10.0)
-        self.last_event.cancel()
     
     def on_custom_press(self, *args):
-        if not self.loading:
-            self.animations_click_self.start(self)
-            self.animations_click_loading.start(self.parent.loading)
-        self.loading = True
-        self.last_event.cancel()
-        self.last_event = Clock.schedule_once(self.stopped_loading, 20.0)
+        if not BlueTooth.is_connect:
+            if not self.loading:
+                self.animations_click_self.start(self)
+                self.animations_click_loading.start(self.parent.loading)
+            self.loading = True
+            
+            threading.Thread(target=self.connect_bluetooth).start()
     
-    def stopped_loading(self, *args):
-        Clock.schedule_once(self.reverse_anim, 0.5)
-        self.parent.connect_message.message("Aucun appareil n'est détecté")
+    def connect_bluetooth(self, *args):
+        try:
+            asyncio.run(BlueTooth.connect())
+        except Exception as e:
+            print(f"Error connecting Bluetooth: {e}")
+            self.parent.connect_message.message("Aucun appareil n'est détecté")
+        finally:
+            Clock.schedule_once(self.reverse_anim, 0.5)
     
     def reverse_anim(self, *args):
         self.animations_click_reverse_self.start(self)
