@@ -21,10 +21,9 @@ class SafeCyclingApp(App):
         self.manager = MyScreenManager()
         return self.manager
 
-    def on_stop(self):
-        Api.continue_loop = False
-        return super().on_stop()
-
 
 if __name__ == '__main__':
-    SafeCyclingApp().run()
+    try:
+        SafeCyclingApp().run()
+    finally:
+        Api.continue_loop = False

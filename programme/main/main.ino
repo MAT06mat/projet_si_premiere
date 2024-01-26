@@ -5,6 +5,9 @@
 
 SoftwareSerial blueToothSerial(RxD,TxD);
 
+int velo_speed = 0;
+int loop_iter = 0;
+
 void setup(){
     Serial.begin(9600);
     Serial.println("Démarrage en cours");
@@ -16,40 +19,53 @@ void setup(){
 }
 
 void loop(){
-   String recept = bluetooth_recv();
-   if (recept != "") {
+  loop_iter = loop_iter + 1;
+  
+  String recept = bluetooth_recv();
+  if (recept != "") {
     Serial.println(recept);
-   }
-   if (Serial.available() > 0) {
+  }
+  if (Serial.available() > 0) {
     String text = Serial.readString();
     bluetooth_send(text);
-   }
-  bspeed(speed);
-  speed = speed + 1;
-  delay(100);
+  }
+
+  if (loop_iter > 100) {
+    loop_iter = 0;
+    send_velo_speed(velo_speed);
+    velo_speed = velo_speed + 1;
+  }
+
+  delay(10);
 }
+
+String last_recieve = "";
 
 String bluetooth_recv () {
   byte recu;
-  String text = "";
-  if(blueToothSerial.available()>0){
-     while(blueToothSerial.available()) {
+  String text = last_recieve;
+    while (true) {
+      if (blueToothSerial.available()>0) {
         byte recu = blueToothSerial.read();
         char charRecu = static_cast<char>(recu);
         if (charRecu == '#') {
-          return text;
+          break;
         } else {
-           text = text + charRecu;
+          text = text + charRecu;
         }
-     }
-  }
+      } else {
+        last_recieve = text;
+        return "";
+      }
+    }
+  last_recieve = "";
   return text;
 }
 
 
-void bspeed(const String& text) {
+void send_velo_speed(int vspeed) {
   blueToothSerial.print("set-speed-");
-  blueToothSerial.print(text);
+  blueToothSerial.print(vspeed);
   blueToothSerial.print('#');
 }
 

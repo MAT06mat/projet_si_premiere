@@ -5,12 +5,14 @@ from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from kivy.animation import Animation
 from kivy.graphics import Line, Color
+from kivy.properties import BooleanProperty
 from kivy.clock import Clock
+from kivy.app import App
 
+import threading, asyncio
 
 from custom_resize_button import CustomResizeButton
 from bluetooth import BlueTooth
-import threading, asyncio
 
 
 Builder.load_file("screens/connection_screen.kv")
@@ -82,6 +84,7 @@ Vérifiez que votre bluetooth est bien activé.[/color]"""
 
 class ConnectButton(CustomResizeButton):
     loading = False
+    change_screen = False
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -98,6 +101,13 @@ class ConnectButton(CustomResizeButton):
         self.animations_click_reverse_self = Animation(d=1, pos_hint={"center_x": 0.5, "center_y": 0.25}, t='in_out_cubic')
         self.animations_click_reverse_loading = Animation(d=0.5, pos_hint={"center_x": 0.5, "center_y": 0.25}, t='in_out_cubic')
         self.animations_click_reverse_loading &= Animation(d=0.5, opacity=0, t='in_out_cubic')
+        Clock.schedule_interval(self.loop, 1/20)
+    
+    def loop(self, *args):
+        if self.change_screen:
+            self.change_screen = False
+            app = App.get_running_app()
+            app.manager.push("MainMenu")
     
     def on_custom_press(self, *args):
         if not BlueTooth.is_connect:
@@ -111,6 +121,7 @@ class ConnectButton(CustomResizeButton):
     def connect_bluetooth(self, *args):
         try:
             asyncio.run(BlueTooth.connect())
+            self.change_screen = True
         except Exception as e:
             print(f"Error connecting Bluetooth: {e}")
             self.parent.connect_message.message("Aucun appareil n'est détecté")

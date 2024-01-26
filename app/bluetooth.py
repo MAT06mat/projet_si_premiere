@@ -6,6 +6,7 @@ from time import sleep
 
 class BlueToothObject:
     is_connect = False
+    last_recieve = ""
     
     def __init__(self) -> None:
         self.socket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM) # Create socket
@@ -27,7 +28,7 @@ class BlueToothObject:
     
     def recieve(self):
         if self.is_connect:
-            text = ""
+            text = self.last_recieve
             while 1:
                 ready_to_read, _, _ = select.select([self.socket], [], [], 0)
                 if ready_to_read:
@@ -38,11 +39,13 @@ class BlueToothObject:
                     else:
                         text += char
                 else:
-                    break
+                    self.last_recieve = text
+                    return None
             if len(text) >= 2:
                 if text[-1] == "n" and text[-2] == "\\":
                     # Remove "\n" suffix 
                     text = text[:-2]
+            self.last_recieve = ""
             return text
         else:
             return None
@@ -112,6 +115,7 @@ class Request:
             if text[0] == "set":
                 if text[1] == "speed":
                     self.speed = int(text[2])
+                    print(self.speed)
         except Exception as e:
             print("Exeption on decode message :", e)
     
