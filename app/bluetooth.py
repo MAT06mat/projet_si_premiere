@@ -16,6 +16,7 @@ class BlueToothObject:
             port = 1  # Match the setting on the HC-05 module
             self.socket.connect((ADRESSE, port))
             self.is_connect = True
+            self.send("connected")
             print("Bluetooth is connected.")
             return True
         return False
@@ -68,6 +69,7 @@ class BlueToothObject:
     
     def deconnect(self):
         if self.is_connect:
+            self.send("deconnected")
             self.socket.close()
             self.is_connect = False
             print("Bluetooth is deconnected.")
@@ -99,9 +101,6 @@ class Request:
                     func(recept)
             
             sleep(0.1)
-    
-    def command(self, *val):
-        BlueTooth.send("-".join(val))
     
     def recv(self, text):
         try:
