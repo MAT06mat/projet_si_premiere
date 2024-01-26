@@ -30,7 +30,7 @@ void loop(){
     bluetooth_send(text);
   }
 
-  if (loop_iter > 100) {
+  if (loop_iter >= 100) {
     loop_iter = 0;
     send_velo_speed(velo_speed);
     velo_speed = velo_speed + 1;
