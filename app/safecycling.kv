@@ -1,5 +1,5 @@
-#:import boxlayout_with_action_bar boxlayout_with_action_bar
-#:import connection_screen connection_screen
+#:import screens.connection_screen screens.connection_screen
+#:import screens.main_menu_screen screens.main_menu_screen
 
 
 <MyScreenManager>:
@@ -8,9 +8,7 @@
         ConnectionScreen:
     Screen:
         name: "MainMenu"
-        BoxLayoutWithActionBar:
-            title: "Se deconnecter"
-            BoxLayout:
+        MainMenuScreen:
     TransitionScreen:
         name: "TransitionScreen"
         BlackScreen:

@@ -9,11 +9,11 @@ from kivy.clock import Clock
 
 
 from custom_resize_button import CustomResizeButton
-from bluetooth import BlueTooth, Api
+from bluetooth import BlueTooth
 import threading, asyncio
 
 
-Builder.load_file("connection_screen.kv")
+Builder.load_file("screens/connection_screen.kv")
 
 
 class AnimateImage(Image):
@@ -77,7 +77,7 @@ class ConnectDescription(ConnectLabel):
         self.size_hint = (0.9, None)
         self.pos_hint = {"center_x": 0.5, "center_y": 0.65}
         self.text = """[color=202020]Pour continuer vous devez vous connecter à un appareil allumé.\n
-Vérifiez que votre bluetooth est bien activé et que le périphérique est bien appairé.[/color]"""
+Vérifiez que votre bluetooth est bien activé.[/color]"""
 
 
 class ConnectButton(CustomResizeButton):

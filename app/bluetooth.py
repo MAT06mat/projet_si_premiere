@@ -47,6 +47,22 @@ class BlueToothObject:
         else:
             return None
     
+    def check_connection(self):
+        if self.is_connect:
+            # Utilisez getsockopt pour vérifier l'état de la connexion
+            try:
+                error_code = self.socket.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
+                if error_code == 0:
+                    return True  # La connexion est toujours active
+                else:
+                    print(f"Socket error: {error_code}")
+                    return False  # Il y a une erreur sur le socket
+            except socket.error as e:
+                print(f"Error checking socket status: {e}")
+                return False  # Il y a une erreur lors de la vérification du socket
+        else:
+            return False  # Le socket n'est pas connecté
+    
     def deconnect(self):
         if self.is_connect:
             self.socket.close()
@@ -62,6 +78,7 @@ BlueTooth = BlueToothObject()
 class Request:
     func = {"on_recieve": []}
     continue_loop = True
+    speed = 0
     
     def __init__(self) -> None:
         threading.Thread(target=self.loop).start()
@@ -72,22 +89,31 @@ class Request:
     
     def loop(self, *args):
         while self.continue_loop:
+            # Reception d'un message
             recept = BlueTooth.recieve()
             if recept:
                 for func in self.func["on_recieve"]:
                     func(recept)
+            
             sleep(0.1)
     
-    def set(name, value):
-        command = f"set-{name}-{value}"
-        return BlueTooth.send(command)
-    
-    def get(name):
-        command = f"get-{name}"
-        return BlueTooth.send(command)
+    def command(self, *val):
+        BlueTooth.send("-".join(val))
     
     def recv(self, text):
-        print("Text reçu :", text)
+        try:
+            # text = "print-Bonjour"
+            # text = "set-led-HIGH"
+            text = text.split('-')
+            if text[0] == "print":
+                text.pop(0)
+                text = "-".join(text)
+                print("Print :", text)
+            if text[0] == "set":
+                if text[1] == "speed":
+                    self.speed = int(text[2])
+        except Exception as e:
+            print("Exeption on decode message :", e)
     
 
 Api = Request()

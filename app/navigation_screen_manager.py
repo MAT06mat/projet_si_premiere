@@ -3,7 +3,6 @@ from kivy.uix.screenmanager import ScreenManager, FadeTransition
 from kivy.uix.screenmanager import Screen
 from kivy.properties import ListProperty, ObjectProperty
 from kivy.clock import Clock
-from kivy.core.window import Window
 
 
 class TransitionScreen(Screen):

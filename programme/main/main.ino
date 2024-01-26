@@ -16,25 +16,46 @@ void setup(){
 }
 
 void loop(){
-    byte recu;
-    if(blueToothSerial.available()>0){
-       while(blueToothSerial.available()) {
-        byte recu = blueToothSerial.read();
-        char charRecu = static_cast<char>(recu);
-        if (charRecu == '#') {
-          Serial.println();
-        } else {
-           Serial.print(charRecu);
-        }
-      }
+   String recept = bluetooth_recv();
+   if (recept != "") {
+    Serial.println(recept);
    }
    if (Serial.available() > 0) {
     String text = Serial.readString();
     bluetooth_send(text);
    }
+  bspeed(speed);
+  speed = speed + 1;
+  delay(100);
 }
 
+String bluetooth_recv () {
+  byte recu;
+  String text = "";
+  if(blueToothSerial.available()>0){
+     while(blueToothSerial.available()) {
+        byte recu = blueToothSerial.read();
+        char charRecu = static_cast<char>(recu);
+        if (charRecu == '#') {
+          return text;
+        } else {
+           text = text + charRecu;
+        }
+     }
+  }
+  return text;
+}
+
+
+void bspeed(const String& text) {
+  blueToothSerial.print("set-speed-");
+  blueToothSerial.print(text);
+  blueToothSerial.print('#');
+}
+
+
 void bluetooth_send(const String& text) {
+  blueToothSerial.print("print-");
   blueToothSerial.print(text);
   blueToothSerial.print('#');
 }
