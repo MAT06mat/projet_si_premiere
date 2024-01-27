@@ -27,12 +27,16 @@ void loop(){
   }
   if (Serial.available() > 0) {
     String text = Serial.readString();
-    bluetooth_send(text);
+    blueToothSerial.print("print-");
+    blueToothSerial.print(text);
+    blueToothSerial.print('#');
   }
 
   if (loop_iter >= 100) {
     loop_iter = 0;
-    send_velo_speed(velo_speed);
+    blueToothSerial.print("speed-");
+    blueToothSerial.print(velo_speed);
+    blueToothSerial.print('#');
     velo_speed = velo_speed + 1;
   }
 
@@ -62,19 +66,6 @@ String bluetooth_recv () {
   return text;
 }
 
-
-void send_velo_speed(int vspeed) {
-  blueToothSerial.print("set-speed-");
-  blueToothSerial.print(vspeed);
-  blueToothSerial.print('#');
-}
-
-
-void bluetooth_send(const String& text) {
-  blueToothSerial.print("print-");
-  blueToothSerial.print(text);
-  blueToothSerial.print('#');
-}
 
 void setupBlueToothConnection(){
   blueToothSerial.begin(9600);  

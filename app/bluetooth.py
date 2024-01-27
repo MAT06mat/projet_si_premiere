@@ -2,6 +2,7 @@ ADRESSE = "00:0E:EA:CF:58:14"
 
 import socket, select, threading
 from time import sleep
+from kivy.clock import Clock
 
 
 class BlueToothObject:
@@ -82,25 +83,23 @@ BlueTooth = BlueToothObject()
 
 class Request:
     func = {"on_recieve": []}
-    continue_loop = True
     speed = 0
     
     def __init__(self) -> None:
-        threading.Thread(target=self.loop).start()
+        # threading.Thread(target=self.loop).start()
+        Clock.schedule_interval(self.loop, 1/20)
         self.bind(self.recv)
     
     def bind(self, func, type="on_recieve"):
         self.func[type].append(func)
     
     def loop(self, *args):
-        while self.continue_loop:
-            # Reception d'un message
-            recept = BlueTooth.recieve()
-            if recept:
-                for func in self.func["on_recieve"]:
-                    func(recept)
-            
-            sleep(0.1)
+        # Reception d'un message
+        recept = BlueTooth.recieve()
+        if recept:
+            for func in self.func["on_recieve"]:
+                func(recept)
+        
     
     def recv(self, text):
         try:
@@ -111,10 +110,9 @@ class Request:
                 text.pop(0)
                 text = "-".join(text)
                 print("Print :", text)
-            if text[0] == "set":
-                if text[1] == "speed":
-                    self.speed = int(text[2])
-                    print(self.speed)
+            if text[0] == "speed":
+                self.speed = int(text[1])
+                print(self.speed)
         except Exception as e:
             print("Exeption on decode message :", e)
     

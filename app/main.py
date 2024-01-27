@@ -5,7 +5,6 @@ from kivy.core.window import Window
 Window.size = (320, 660)
 
 from navigation_screen_manager import NavigationScreenManager
-from bluetooth import Api
 
 
 class MyScreenManager(NavigationScreenManager):
@@ -23,7 +22,4 @@ class SafeCyclingApp(App):
 
 
 if __name__ == '__main__':
-    try:
-        SafeCyclingApp().run()
-    finally:
-        Api.continue_loop = False
+    SafeCyclingApp().run()
