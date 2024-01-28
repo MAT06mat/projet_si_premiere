@@ -91,7 +91,7 @@ class CustomButtonBehavior(CustomPressButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.background_color = (1, 1, 1, 0)
-        self.image = Image(source=self.source, size=self.size, pos=self.pos)
+        self.image = Image(source=self.source, size=self.size, pos=self.pos, fit_mode="contain")
         self.add_widget(self.image, canvas="before")
         self.bind(source=self._source_change, disabled_source=self._source_change, disabled=self._source_change)
         self.bind(size=self._update_image, coef_size=self._update_image, center=self._update_image)
