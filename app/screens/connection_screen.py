@@ -109,14 +109,16 @@ class ConnectButton(CustomResizeButton):
             app = App.get_running_app()
             app.manager.push("MainMenu")
     
+    def condition(self):
+        return not self.loading
+    
     def on_custom_press(self, *args):
         if not BlueTooth.is_connect:
             if not self.loading:
                 self.animations_click_self.start(self)
                 self.animations_click_loading.start(self.parent.loading)
+                threading.Thread(target=self.connect_bluetooth).start()
             self.loading = True
-            
-            threading.Thread(target=self.connect_bluetooth).start()
     
     def connect_bluetooth(self, *args):
         try:

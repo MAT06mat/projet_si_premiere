@@ -57,7 +57,7 @@ class CustomPressButton(Button):
         """Custom press event, call after unclick the button"""
 
 
-class CustomResizeButton(CustomPressButton):
+class CustomButtonBehavior(CustomPressButton):
     touch_inside = False
     """`Private var`"""
     
@@ -107,7 +107,9 @@ class CustomResizeButton(CustomPressButton):
     def _update_image(self, *args):
         self.image.size = (self.size[0]*(1-self.coef_size), self.size[1]*(1-self.coef_size))
         self.image.center = self.center
-    
+
+
+class CustomResizeButton(CustomButtonBehavior):
     def on_press(self):
         if not self.condition():
             return super().on_press()
@@ -133,3 +135,91 @@ class CustomResizeButton(CustomPressButton):
             self.anim.start(self)
             self.anim_reverse.cancel(self)
         return super().on_touch_up(touch)
+
+
+class CustomToggleButton(CustomButtonBehavior):
+    pressed = True
+    '''Property for `CustomToggleButton`.'''
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.anim_2 = Animation(d=0.1, t="in_out_quad", coef_size=0.07)
+    
+    def up(self):
+        '''Func to force up the button.'''
+        if not self.pressed:
+            self.force_toggle()
+    
+    def down(self):
+        '''Func to force down the button.'''
+        if self.pressed:
+            self.force_toggle
+    
+    def force_toggle(self):
+        if not self.pressed:
+            self.anim.start(self)
+        else:
+            self.anim_2.start(self)
+        self.anim_reverse.cancel(self)
+        self.touch_inside = True
+        
+        def callback(*args):
+            App.get_running_app().click_disabled = False
+            self.custom_press += 1
+        
+        if self.wait_end:
+            # Wait the end of the animation
+            Clock.schedule_once(callback, 0.11)
+            App.get_running_app().click_disabled = True
+        else:
+            callback()
+        self.last_press = False
+    
+    def on_press(self):
+        if not self.condition():
+            return super().on_press()
+        self.last_press = True
+        self.touch_inside = True
+        self.anim.cancel(self)
+        self.anim_2.cancel(self)
+        self.anim_reverse.start(self)
+        return super().on_press()
+    
+    def on_touch_move(self, touch):
+        if self.last_press and self.collide_point(*touch.pos) and not self.touch_inside:
+            self.touch_inside = True
+            self.anim.cancel(self)
+            self.anim_2.cancel(self)
+            self.anim_reverse.start(self)
+        elif self.last_press and not self.collide_point(*touch.pos) and self.touch_inside:
+            self.touch_inside = False
+            if self.pressed:
+                self.anim.start(self)
+            else:
+                self.anim_2.start(self)
+            self.anim_reverse.cancel(self)
+        return super().on_touch_move(touch)
+    
+    def on_touch_up(self, touch):
+        if self.pressed:
+            self.anim.start(self)
+        else:
+            self.anim_2.start(self)
+        self.anim_reverse.cancel(self)
+        return super().on_touch_up(touch)
+
+    def on_custom_press(self, *args):
+        if self.touch_inside:
+            if self.pressed:
+                self.on_down()
+            else:
+                self.on_up()
+            self.pressed = not self.pressed
+            self.touch_inside = False
+        return super().on_custom_press(*args)
+    
+    def on_down(self):
+        '''Event call when button is pressed.'''
+    
+    def on_up(self):
+        '''Event call when button is unpressed.'''
