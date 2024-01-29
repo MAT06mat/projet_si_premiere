@@ -1,13 +1,15 @@
 ADRESSE = "00:0E:EA:CF:58:14"
 
-import socket, select, threading
-from time import sleep
+import socket, select
+from time import time
 from kivy.clock import Clock
 
 
 class BlueToothObject:
     is_connect = False
     last_recieve = ""
+    last_communication_time = 0
+    time_out_duration = 2
     
     def __init__(self) -> None:
         self.socket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM) # Create socket
@@ -17,6 +19,7 @@ class BlueToothObject:
             port = 1  # Match the setting on the HC-05 module
             self.socket.connect((ADRESSE, port))
             self.is_connect = True
+            BlueTooth.last_communication_time = time()
             self.send("connected")
             print("Bluetooth is connected.")
             return True
@@ -34,6 +37,7 @@ class BlueToothObject:
             while 1:
                 ready_to_read, _, _ = select.select([self.socket], [], [], 0)
                 if ready_to_read:
+                    self.last_communication_time = time()
                     # Add the next caractere
                     char = repr(self.socket.recv(1)).split("'")[1]
                     if char == "#":
@@ -52,22 +56,6 @@ class BlueToothObject:
         else:
             return None
     
-    def check_connection(self):
-        if self.is_connect:
-            # Utilisez getsockopt pour vérifier l'état de la connexion
-            try:
-                error_code = self.socket.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
-                if error_code == 0:
-                    return True  # La connexion est toujours active
-                else:
-                    print(f"Socket error: {error_code}")
-                    return False  # Il y a une erreur sur le socket
-            except socket.error as e:
-                print(f"Error checking socket status: {e}")
-                return False  # Il y a une erreur lors de la vérification du socket
-        else:
-            return False  # Le socket n'est pas connecté
-    
     def deconnect(self):
         if self.is_connect:
             self.send("deconnected")
@@ -82,26 +70,41 @@ BlueTooth = BlueToothObject()
 
 
 class Request:
-    func = {"on_recieve": []}
+    func = {"on_recieve": [], "bluetooth_time_out": []}
     speed = 0
+    loop_iter = 0
     
     def __init__(self) -> None:
         # threading.Thread(target=self.loop).start()
         Clock.schedule_interval(self.loop, 1/20)
-        self.bind(self.recv)
+        self.bind(self.on_recieve)
     
     def bind(self, func, type="on_recieve"):
         self.func[type].append(func)
     
+    def __call(self, type, *args):
+        for func in self.func[type]:
+            func(*args)
+    
     def loop(self, *args):
-        # Reception d'un message
+        self.loop_iter += 1
+        
+        # Déctection de la reception d'un message
         recept = BlueTooth.recieve()
         if recept:
-            for func in self.func["on_recieve"]:
-                func(recept)
+            self.__call("on_recieve", recept)
         
-    
-    def recv(self, text):
+        # Déctection de la déconnection
+        if BlueTooth.is_connect:
+            if time() - BlueTooth.last_communication_time > BlueTooth.time_out_duration:
+                BlueTooth.deconnect()
+                self.__call("bluetooth_time_out")
+        
+        if self.loop_iter >= 10:
+            self.loop_iter = 0
+            BlueTooth.send("p")
+
+    def on_recieve(self, text):
         try:
             # text = "print-Bonjour"
             # text = "set-led-HIGH"
