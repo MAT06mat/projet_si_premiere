@@ -1,7 +1,6 @@
 #include <SoftwareSerial.h>   //Software Serial Port
 #define RxD         10
 #define TxD         11
-#define PINLED      9
 
 SoftwareSerial blueToothSerial(RxD,TxD);
 
@@ -19,7 +18,6 @@ void setup(){
     Serial.println("Démarrage en cours");
     pinMode(RxD, INPUT);
     pinMode(TxD, OUTPUT);
-    pinMode(PINLED, OUTPUT);
     setupBlueToothConnection();
     Serial.println("Démarrage ternimé");
 }
