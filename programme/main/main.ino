@@ -31,7 +31,7 @@ void loop(){
   // Détecter la déconnection
   if (millis() - lastCommunicationTime > timeoutDuration and client_connected) {
     client_connected = false;
-    Serial.println("Bluetooth client déconnecté !");
+    Serial.println("Client bluetooth déconnecté !");
   }
 
   // Détecter la réception
@@ -39,13 +39,13 @@ void loop(){
   if (recept != "") {
     lastCommunicationTime = millis();
 
-    if (recept = "connected") {
+    if (recept.endsWith("connected") or recept == "connected") {
       client_connected = true;
-      Serial.println("Bluetooth client connecté !");
+      Serial.println("Client bluetooth connecté !");
     } else
-    if (recept = "deconnected") {
+    if (recept == "deconnected") {
       client_connected = false;
-      Serial.println("Bluetooth client déconnecté !");
+      Serial.println("Client bluetooth déconnecté !");
     } else
     if (recept != "p") {
       Serial.println(recept);
