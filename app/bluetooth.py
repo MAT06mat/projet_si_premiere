@@ -71,12 +71,13 @@ BlueTooth = BlueToothObject()
 
 class Request:
     func = {"on_recieve": [], "bluetooth_time_out": []}
-    speed = 0
+    acc = 0
+    last_acc = 0
     loop_iter = 0
     
     def __init__(self) -> None:
         # threading.Thread(target=self.loop).start()
-        Clock.schedule_interval(self.loop, 1/20)
+        Clock.schedule_interval(self.loop, 1/60)
         self.bind(self.on_recieve)
     
     def bind(self, func, type="on_recieve"):
@@ -106,16 +107,21 @@ class Request:
 
     def on_recieve(self, text):
         try:
-            # text = "print-Bonjour"
-            # text = "set-led-HIGH"
-            text = text.split('-')
+            # text = "print:Bonjour"
+            # text = "set:led:HIGH"
+            text = text.split(':')
             if text[0] == "print":
                 text.pop(0)
-                text = "-".join(text)
+                text = ":".join(text)
                 print("Print :", text)
             if text[0] == "speed":
-                self.speed = int(text[1])
-                print(self.speed)
+                self.last_acc = self.acc
+                
+                try:
+                    self.acc = int(text[1])
+                except:
+                    self.acc = 0
+                print(self.acc)
         except Exception as e:
             print("Exeption on decode message :", e)
     

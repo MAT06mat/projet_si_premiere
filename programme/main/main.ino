@@ -2,6 +2,29 @@
 #define RxD         10
 #define TxD         11
 
+// #######################################################
+
+#include "AK09918.h"
+#include "ICM20600.h"
+#include <Wire.h>
+
+AK09918_err_type_t err;
+int32_t x, y, z;
+AK09918 ak09918;
+ICM20600 icm20600(true);
+int16_t acc_x, acc_y, acc_z;
+int32_t offset_x, offset_y, offset_z;
+double roll, pitch;
+// Find the magnetic declination at your location
+// http://www.magnetic-declination.com/
+double declination_shenzhen = -2.2;
+int x_a=0;
+
+
+// #######################################################
+
+
+
 SoftwareSerial blueToothSerial(RxD,TxD);
 
 int velo_speed = 0;
@@ -20,6 +43,31 @@ void setup(){
     pinMode(TxD, OUTPUT);
     setupBlueToothConnection();
     Serial.println("Démarrage ternimé");
+
+
+    // ######################################################
+    // join I2C bus (I2Cdev library doesn't do this automatically)
+    Wire.begin();
+
+    err = ak09918.initialize();
+    icm20600.initialize();
+    ak09918.switchMode(AK09918_POWER_DOWN);
+    ak09918.switchMode(AK09918_CONTINUOUS_100HZ);
+    Serial.begin(9600);
+
+    err = ak09918.isDataReady();
+    while (err != AK09918_ERR_OK) {
+        Serial.println("Waiting Sensor");
+        delay(100);
+        err = ak09918.isDataReady();
+    }
+
+    Serial.println("Start figure-8 calibration after 2 seconds.");
+    delay(2000);
+    calibrate(10000, &offset_x, &offset_y, &offset_z);
+    Serial.println("");
+    
+    Serial.println("Calibration ternimé");
 }
 
 
@@ -53,21 +101,23 @@ void loop(){
   // Détecter l'entrée
   if (Serial.available() > 0) {
     String text = Serial.readString();
-    blueToothSerial.print("print-");
+    blueToothSerial.print("print:");
     blueToothSerial.print(text);
     blueToothSerial.print('#');
   }
 
   // Envoyer des messages
-  if (loop_iter >= 100) {
+  if (loop_iter >= 10) {
     loop_iter = 0;
-    // Laisser une variable à envoyer régulièrement pour ping le client
-    blueToothSerial.print("speed-");
-    blueToothSerial.print(velo_speed);
-    blueToothSerial.print('#');
-    velo_speed = velo_speed + 1;
+    if (client_connected) {
+      get_speed();
+      // Laisser une variable à envoyer régulièrement pour ping le client
+      blueToothSerial.print("speed:");
+      blueToothSerial.print(velo_speed);
+      blueToothSerial.print('#');
+      }
   }
-
+  
   delay(10);
 }
 
@@ -93,6 +143,95 @@ String bluetooth_recv () {
   }
   last_recieve = "";
   return text;
+}
+
+
+void get_speed() {
+  acc_x = icm20600.getAccelerationX();
+  Serial.print("A:  ");
+  Serial.print(acc_x);
+  Serial.print(", ");
+  Serial.println(x_a+10);
+
+  if (acc_x<x_a+15) {
+    Serial.println("OK");
+   
+  } else {
+    Serial.println("Pas OK");
+  }
+  int x_a=acc_x;
+  velo_speed = acc_x;
+}
+
+
+void calibrate(uint32_t timeout, int32_t* offsetx, int32_t* offsety, int32_t* offsetz) {
+    int32_t value_x_min = 0;
+    int32_t value_x_max = 0;
+    int32_t value_y_min = 0;
+    int32_t value_y_max = 0;
+    int32_t value_z_min = 0;
+    int32_t value_z_max = 0;
+    uint32_t timeStart = 0;
+
+    ak09918.getData(&x, &y, &z);
+
+    value_x_min = x;
+    value_x_max = x;
+    value_y_min = y;
+    value_y_max = y;
+    value_z_min = z;
+    value_z_max = z;
+    delay(100);
+
+    timeStart = millis();
+
+    while ((millis() - timeStart) < timeout) {
+        ak09918.getData(&x, &y, &z);
+
+        /* Update x-Axis max/min value */
+        if (value_x_min > x) {
+            value_x_min = x;
+            // Serial.print("Update value_x_min: ");
+            // Serial.println(value_x_min);
+
+        } else if (value_x_max < x) {
+            value_x_max = x;
+            // Serial.print("update value_x_max: ");
+            // Serial.println(value_x_max);
+        }
+
+        /* Update y-Axis max/min value */
+        if (value_y_min > y) {
+            value_y_min = y;
+            // Serial.print("Update value_y_min: ");
+            // Serial.println(value_y_min);
+
+        } else if (value_y_max < y) {
+            value_y_max = y;
+            // Serial.print("update value_y_max: ");
+            // Serial.println(value_y_max);
+        }
+
+        /* Update z-Axis max/min value */
+        if (value_z_min > z) {
+            value_z_min = z;
+            // Serial.print("Update value_z_min: ");
+            // Serial.println(value_z_min);
+
+        } else if (value_z_max < z) {
+            value_z_max = z;
+            // Serial.print("update value_z_max: ");
+            // Serial.println(value_z_max);
+        }
+
+        Serial.print(".");
+        delay(100);
+
+    }
+
+    *offsetx = value_x_min + (value_x_max - value_x_min) / 2;
+    *offsety = value_y_min + (value_y_max - value_y_min) / 2;
+    *offsetz = value_z_min + (value_z_max - value_z_min) / 2;
 }
 
 

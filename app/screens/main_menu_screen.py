@@ -16,7 +16,7 @@ class SpeedLabel(Label):
         self.text = ""
     
     def on_message(self, text):
-        self.text = f"Vitesse actuelle : {round(Api.speed/36, 2)}km/h"
+        self.text = f"Acc: {Api.acc}, Var: {Api.acc - Api.last_acc}"
 
 
 class Arrow(CustomToggleButton):
