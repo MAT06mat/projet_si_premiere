@@ -23,12 +23,36 @@ int x_a=0;
 
 // #######################################################
 
+#include "Adafruit_NeoPixel.h"
+#ifdef __AVR__
+  #include <avr/power.h>
+#endif
+
+// Which pin on the Arduino is connected to the NeoPixels?
+// On a Trinket or Gemma we suggest changing this to 1
+#define PIN            6
+
+// How many NeoPixels are attached to the Arduino?
+#define NUMPIXELS      20
+
+// When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
+// Note that for older NeoPixel strips you might need to change the third parameter--see the strandtest
+// example for more information on possible values.
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+int delayval = 500; // delay for half a second
+
+// #######################################################
+
 
 
 SoftwareSerial blueToothSerial(RxD,TxD);
 
 int velo_speed = 0;
 int loop_iter = 0;
+int last_dcc_iter = -1;
+
+int iter_led = 0;
+int mode_led = 0;
 
 unsigned long lastCommunicationTime = 0;
 const unsigned long timeoutDuration = 2000;
@@ -37,16 +61,30 @@ bool client_connected = false;
 
 
 void setup(){
+    // LED ---------------------------------- 
+    // Led exemple :
+    // https://wiki.seeedstudio.com/Grove-LED_ring/
+
+    #if defined (__AVR_ATtiny85__)
+    if (F_CPU == 16000000) {
+        clock_prescale_set(clock_div_1);
+    }
+    #endif
+    
+    pixels.setBrightness(255);
+    pixels.begin(); // This initializes the NeoPixel library.  
+
+    led_blue();
+    
+    // BLUETOOTH ------------------------------
     Serial.begin(9600);
     Serial.println("Démarrage en cours");
     pinMode(RxD, INPUT);
     pinMode(TxD, OUTPUT);
     setupBlueToothConnection();
-    Serial.println("Démarrage ternimé");
 
 
-    // ######################################################
-    // join I2C bus (I2Cdev library doesn't do this automatically)
+    // ACCELEROMETRE --------------------------
     Wire.begin();
 
     err = ak09918.initialize();
@@ -62,17 +100,28 @@ void setup(){
         err = ak09918.isDataReady();
     }
 
-    Serial.println("Start figure-8 calibration after 2 seconds.");
-    delay(2000);
-    calibrate(10000, &offset_x, &offset_y, &offset_z);
+    Serial.println("Start figure-8 calibration");
+    calibrate(10000);
     Serial.println("");
     
+    led_green();
     Serial.println("Calibration ternimé");
+    delay(2000);
+    led_clean();
 }
 
 
 void loop(){
   loop_iter = loop_iter + 1;
+  
+  if (last_dcc_iter >= 0) {
+    last_dcc_iter += 1;
+    mode_led = 1;
+  }
+  if (last_dcc_iter >= 30) {
+    last_dcc_iter = -1;
+    mode_led = 0;
+  }
 
   // Détecter la déconnection
   if (millis() - lastCommunicationTime > timeoutDuration and client_connected) {
@@ -110,15 +159,156 @@ void loop(){
   if (loop_iter >= 10) {
     loop_iter = 0;
     if (client_connected) {
-      get_speed();
       // Laisser une variable à envoyer régulièrement pour ping le client
       blueToothSerial.print("speed:");
       blueToothSerial.print(velo_speed);
       blueToothSerial.print('#');
       }
   }
+  get_acceleration();
+  
+  if ( iter_led >= 80 ) { 
+        iter_led = 0;
+  }
+  
+  led();
   
   delay(10);
+}
+
+
+// LED ----------------------------------------------
+
+void led() {
+  iter_led = iter_led + 1;
+
+  if ( mode_led == 0 ) {
+    led_clean();
+  }
+  else if ( mode_led == 1 ) { 
+   led_red();
+  }
+  else if ( mode_led == 2 ) {
+    if(iter_led <= 40 ) {
+      led_right();
+      led_left();
+    } 
+    else if ( iter_led >= 40) { 
+       led_clean();
+    }    
+  } 
+  
+  else if ( mode_led == 3 ) {
+    if(iter_led <= 40 ) {
+      led_left();
+    } 
+    else if ( iter_led >= 40) { 
+       led_clean();
+    }
+  }
+  else if ( mode_led == 4 ) {
+    if(iter_led <= 40 ) {
+      led_right();
+    } 
+    else { 
+      led_clean();
+    }
+  }
+}
+
+void led_clean() {
+  for (int i = 0; i < 16; i++) {
+     pixels.setPixelColor(i, pixels.Color(0, 0, 0)); 
+  }  
+  pixels.show();
+}
+
+void led_red() {
+  for (int i = 0; i < 16; i++) {
+     pixels.setPixelColor(i, pixels.Color(255, 0, 0)); 
+  }  
+  pixels.show();
+}
+
+void led_left() {
+  for (int i = 1; i < 6; i++) {
+     pixels.setPixelColor(i, pixels.Color(255, 55, 0)); 
+  }  
+  pixels.show();
+}
+
+void led_right() {
+  for (int i = 9; i < 14; i++) {
+     pixels.setPixelColor(i, pixels.Color(255, 55, 0)); 
+  }  
+  pixels.show();
+}
+
+void led_green() {
+  for (int i = 0; i < 16; i++) {
+     pixels.setPixelColor(i, pixels.Color(0, 255, 0)); 
+  }  
+  pixels.show();
+}
+
+
+void led_blue() {
+//  for (int i = 0; i < 16; i++) {
+//     pixels.setPixelColor(i, pixels.Color(0, 0, 255)); 
+//  }  
+//  pixels.show();
+  pixels.rainbow(0);
+  pixels.show();
+}
+
+
+// ACCELEROMETRE ------------------------------------
+int x_moyenne = 0;
+
+void calibrate(uint32_t timeout) {
+  uint32_t timeStart = 0;
+
+  int x_values = 0;
+  int nb_x_values = 0;
+  delay(100);
+
+  timeStart = millis();
+
+  while ((millis() - timeStart) < timeout) {
+      x = icm20600.getAccelerationX();
+
+      x_values += x;
+      nb_x_values += 1;
+
+      Serial.print(".");
+      delay(100);
+  }
+  x_moyenne = x_values / nb_x_values;
+}
+
+
+void get_acceleration() {
+  acc_x = icm20600.getAccelerationX() - x_moyenne;
+  if (acc_x < -300) { 
+    last_dcc_iter = 0;
+  }
+}
+
+
+// BLUETOOTH -----------------------------------------
+void setupBlueToothConnection(){
+  blueToothSerial.begin(9600);  
+  blueToothSerial.print("AT");
+  delay(400);
+  blueToothSerial.print("AT+DEFAULT");             // Restore all setup value to factory setup
+  delay(2000);
+  blueToothSerial.print("AT+NAMESafe_Cycling");    // set the bluetooth name as "Safe_Cycling"
+  delay(400);
+  blueToothSerial.print("AT+PIN1234");             // set the pair code to connect
+  delay(400);
+  blueToothSerial.print("AT+AUTH1");            
+  delay(400);
+  blueToothSerial.flush();
 }
 
 
@@ -143,109 +333,4 @@ String bluetooth_recv () {
   }
   last_recieve = "";
   return text;
-}
-
-
-void get_speed() {
-  acc_x = icm20600.getAccelerationX();
-  Serial.print("A:  ");
-  Serial.print(acc_x);
-  Serial.print(", ");
-  Serial.println(x_a+10);
-
-  if (acc_x<x_a+15) {
-    Serial.println("OK");
-   
-  } else {
-    Serial.println("Pas OK");
-  }
-  int x_a=acc_x;
-  velo_speed = acc_x;
-}
-
-
-void calibrate(uint32_t timeout, int32_t* offsetx, int32_t* offsety, int32_t* offsetz) {
-    int32_t value_x_min = 0;
-    int32_t value_x_max = 0;
-    int32_t value_y_min = 0;
-    int32_t value_y_max = 0;
-    int32_t value_z_min = 0;
-    int32_t value_z_max = 0;
-    uint32_t timeStart = 0;
-
-    ak09918.getData(&x, &y, &z);
-
-    value_x_min = x;
-    value_x_max = x;
-    value_y_min = y;
-    value_y_max = y;
-    value_z_min = z;
-    value_z_max = z;
-    delay(100);
-
-    timeStart = millis();
-
-    while ((millis() - timeStart) < timeout) {
-        ak09918.getData(&x, &y, &z);
-
-        /* Update x-Axis max/min value */
-        if (value_x_min > x) {
-            value_x_min = x;
-            // Serial.print("Update value_x_min: ");
-            // Serial.println(value_x_min);
-
-        } else if (value_x_max < x) {
-            value_x_max = x;
-            // Serial.print("update value_x_max: ");
-            // Serial.println(value_x_max);
-        }
-
-        /* Update y-Axis max/min value */
-        if (value_y_min > y) {
-            value_y_min = y;
-            // Serial.print("Update value_y_min: ");
-            // Serial.println(value_y_min);
-
-        } else if (value_y_max < y) {
-            value_y_max = y;
-            // Serial.print("update value_y_max: ");
-            // Serial.println(value_y_max);
-        }
-
-        /* Update z-Axis max/min value */
-        if (value_z_min > z) {
-            value_z_min = z;
-            // Serial.print("Update value_z_min: ");
-            // Serial.println(value_z_min);
-
-        } else if (value_z_max < z) {
-            value_z_max = z;
-            // Serial.print("update value_z_max: ");
-            // Serial.println(value_z_max);
-        }
-
-        Serial.print(".");
-        delay(100);
-
-    }
-
-    *offsetx = value_x_min + (value_x_max - value_x_min) / 2;
-    *offsety = value_y_min + (value_y_max - value_y_min) / 2;
-    *offsetz = value_z_min + (value_z_max - value_z_min) / 2;
-}
-
-
-void setupBlueToothConnection(){
-  blueToothSerial.begin(9600);  
-  blueToothSerial.print("AT");
-  delay(400);
-  blueToothSerial.print("AT+DEFAULT");             // Restore all setup value to factory setup
-  delay(2000);
-  blueToothSerial.print("AT+NAMESafe_Cycling");    // set the bluetooth name as "Safe_Cycling"
-  delay(400);
-  blueToothSerial.print("AT+PIN1234");             // set the pair code to connect
-  delay(400);
-  blueToothSerial.print("AT+AUTH1");            
-  delay(400);
-  blueToothSerial.flush();
 }
