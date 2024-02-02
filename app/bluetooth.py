@@ -10,6 +10,9 @@ class BlueToothObject:
     last_recieve = ""
     last_communication_time = 0
     time_out_duration = 2
+    last_send = time()
+    min_time_to_send = 0.2
+    next_text_to_send = ""
     
     def __init__(self) -> None:
         self.socket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM) # Create socket
@@ -19,17 +22,25 @@ class BlueToothObject:
             port = 1  # Match the setting on the HC-05 module
             self.socket.connect((ADRESSE, port))
             self.is_connect = True
-            BlueTooth.last_communication_time = time()
-            self.send("connected")
+            self.last_communication_time = time()
+            self.send("c")
             print("Bluetooth is connected.")
             return True
         return False
     
     def send(self, text):
         if self.is_connect:
-            self.socket.send(bytes(text + '#', 'UTF-8'))
+            self.next_text_to_send += text + "#"
             return True
         return False
+
+    def update(self):
+        if self.is_connect:
+            if self.next_text_to_send != "":
+                if time() - self.last_send > self.min_time_to_send:
+                    self.socket.send(bytes(self.next_text_to_send, 'UTF-8'))
+                    self.next_text_to_send = ""
+                    self.last_send = time()
     
     def recieve(self):
         if self.is_connect:
@@ -58,7 +69,7 @@ class BlueToothObject:
     
     def deconnect(self):
         if self.is_connect:
-            self.send("deconnected")
+            self.send("d")
             self.socket.close()
             self.is_connect = False
             print("Bluetooth is deconnected.")
@@ -101,9 +112,11 @@ class Request:
                 BlueTooth.deconnect()
                 self.__call("bluetooth_time_out")
         
-        if self.loop_iter >= 10:
+        if self.loop_iter >= 60:
             self.loop_iter = 0
             BlueTooth.send("p")
+        
+        BlueTooth.update()
 
     def on_recieve(self, text):
         try:

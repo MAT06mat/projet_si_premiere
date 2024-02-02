@@ -26,19 +26,19 @@ class Arrow(CustomToggleButton):
 class RightArrow(Arrow):
     def on_down(self):
         self.parent.left_arrow.up()
-        BlueTooth.send("right")
+        BlueTooth.send("r")
 
     def on_up(self):
-        BlueTooth.send("stop_right")
+        BlueTooth.send("s_r")
 
 
 class LeftArrow(Arrow):
     def on_down(self):
         self.parent.right_arrow.up()
-        BlueTooth.send("left")
+        BlueTooth.send("l")
     
     def on_up(self):
-        BlueTooth.send("stop_left")
+        BlueTooth.send("s_l")
 
 
 class StopButton(CustomResizeButton):
@@ -59,11 +59,11 @@ class StopButton(CustomResizeButton):
         if self.last_press and self.collide_point(*touch.pos) and not self.touch_inside:
             BlueTooth.send("stop")
         elif self.last_press and not self.collide_point(*touch.pos) and self.touch_inside:
-            BlueTooth.send("stop_stop")
+            BlueTooth.send("s_stop")
         return super().on_touch_move(touch)
     
     def on_custom_press(self, *args):
-        BlueTooth.send("stop_stop")
+        BlueTooth.send("s_stop")
         return super().on_custom_press(*args)
 
 
