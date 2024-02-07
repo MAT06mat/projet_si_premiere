@@ -8,7 +8,7 @@
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
-#define PIN 6
+#define PIN 5
 #define NUMPIXELS 16
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
@@ -29,8 +29,8 @@ int x;
 // -------------------- BLUETOOTH --------------------
 
 #include <SoftwareSerial.h> //Software Serial Port
-#define RxD 10
-#define TxD 11
+#define RxD 6
+#define TxD 7
 
 SoftwareSerial blueToothSerial(RxD, TxD);
 String last_recieve = "";
@@ -43,7 +43,7 @@ const unsigned long timeoutDuration = 2000;
 bool left = false;
 bool right = false;
 bool dcc = false;
-int led_mode = 0;
+int led_mode = 1;
 //  led_mode :
 //     0 -> Rainbow
 //     1 -> Blue
@@ -89,10 +89,10 @@ void setup()
     pinMode(RxD, INPUT);
     pinMode(TxD, OUTPUT);
     setupBlueToothConnection();
-
-    Serial.println("Démarrage en terminé");
-
+    
     led_pulse_finish();
+    
+    Serial.println("Démarrage en terminé");
 }
 
 // ================================================
