@@ -71,6 +71,24 @@ class StopButton(CustomResizeButton):
         return super().on_custom_press(*args)
 
 
+class WarningButton(CustomToggleButton):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        Clock.schedule_interval(self.loop, 1/60)
+    
+    def loop(self, *args):
+        self.pos = (self.parent.stop_button.x, self.parent.left_arrow.top + self.parent.left_arrow.x)
+        self.size = self.parent.stop_button.size
+    
+    def on_down(self):
+        BlueTooth.send("w")
+        return super().on_down()
+    
+    def on_up(self, *args):
+        BlueTooth.send("s_w")
+        return super().on_up(*args)
+
+
 class MainMenuScreen(RelativeLayout):
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -78,7 +96,9 @@ class MainMenuScreen(RelativeLayout):
         self.left_arrow = LeftArrow()
         self.right_arrow = RightArrow()
         self.stop_button = StopButton()
+        self.warning_button = WarningButton()
         self.add_widget(self.speed_label)
         self.add_widget(self.left_arrow)
         self.add_widget(self.right_arrow)
         self.add_widget(self.stop_button)
+        self.add_widget(self.warning_button)

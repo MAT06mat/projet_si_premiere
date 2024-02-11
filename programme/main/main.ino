@@ -158,6 +158,17 @@ void loop()
             left = true;
             iter_led = 0;
         }
+        else if (test(recept, "s_w"))
+        {
+            left = false;
+            right = false;
+        }
+        else if (test(recept, "w"))
+        {
+            right = true;
+            left = true;
+            iter_led = 0;
+        }
         else if (test(recept, "s_stop"))
         {
             dcc = false;
@@ -225,7 +236,7 @@ void led()
             led_show(0, 16, 255, 0, 0);
         }
     }
-    else if (right)
+    if (right)
     {
         if (iter_led <= 40)
         {
@@ -236,11 +247,11 @@ void led()
             else
             {
                 // Set right Led to orange
-                led_show(9, 14, 255, 55, 0);
+                led_show(9, 14, 255, 40, 0);
             }
         }
     }
-    else if (left)
+    if (left)
     {
         if (iter_led <= 40)
         {
@@ -251,7 +262,7 @@ void led()
             else
             {
                 // Set left Led to orange
-                led_show(1, 6, 255, 55, 0);
+                led_show(1, 6, 255, 40, 0);
             }
         }
     }
