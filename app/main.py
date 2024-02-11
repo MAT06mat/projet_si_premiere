@@ -1,8 +1,10 @@
 from kivy.properties import ObjectProperty
 from kivy.app import App
 from kivy.core.window import Window
+import sys
 
-Window.size = (320, 660)
+if sys.platform == "win32":
+    Window.size = (320, 660)
 
 from navigation_screen_manager import NavigationScreenManager
 

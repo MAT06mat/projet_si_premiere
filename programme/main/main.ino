@@ -165,6 +165,9 @@ void loop()
         else if (test(recept, "stop"))
         {
             dcc = true;
+        } else if (not client_connected) {
+            Serial.println("Recieve Signal");
+            connect();
         }
     }
 
@@ -420,6 +423,7 @@ void connect()
 {
     client_connected = true;
     Serial.println("Client bluetooth connecté !");
+    lastCommunicationTime = millis();
 }
 
 void disconnect()

@@ -14,9 +14,13 @@ class SpeedLabel(Label):
         super().__init__(**kwargs)
         Api.bind(self.on_message)
         self.text = ""
+        Clock.schedule_interval(self.on_message, 1/60)
     
     def on_message(self, text):
-        self.text = f"Acc: {Api.acc}, Var: {Api.acc - Api.last_acc}"
+        try:
+            self.text = f" Acc: {Api.acc}, Var: {Api.acc - Api.last_acc}"
+        except:
+            pass
 
 
 class Arrow(CustomToggleButton):

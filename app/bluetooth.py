@@ -1,8 +1,35 @@
 ADRESSE = "00:0E:EA:CF:58:14"
 
-import socket, select
+
 from time import time
 from kivy.clock import Clock
+import sys
+
+
+if sys.platform == "win32":
+    import socket , select
+else:
+    from jnius import autoclass
+
+    BluetoothAdapter = autoclass('android.bluetooth.BluetoothAdapter')
+    BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
+    BluetoothSocket = autoclass('android.bluetooth.BluetoothSocket')
+    InputStreamReader = autoclass('java.io.InputStreamReader')
+    BufferedReader = autoclass('java.io.BufferedReader')
+    UUID = autoclass('java.util.UUID')
+    
+    def get_socket_stream():
+        paired_devices = BluetoothAdapter.getDefaultAdapter().getBondedDevices().toArray()
+        socket = None
+        for device in paired_devices:
+            if device.getAddress() == ADRESSE:
+                socket = device.createRfcommSocketToServiceRecord(
+                    UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
+                send_stream = socket.getOutputStream()
+                reader = InputStreamReader(socket.getInputStream(), 'US-ASCII')
+                recv_stream = BufferedReader(reader)
+                break
+        return socket, recv_stream, send_stream
 
 
 class BlueToothObject:
@@ -13,14 +40,25 @@ class BlueToothObject:
     last_send = time()
     min_time_to_send = 0.2
     next_text_to_send = ""
+    recv_stream = None
+    send_stream = None
     
     def __init__(self) -> None:
-        self.socket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM) # Create socket
+        self.socket = None
     
     async def connect(self):
+        if not self.socket:
+            if sys.platform == "win32":
+                self.socket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM) # Create socket 
+            else:
+                self.socket, self.recv_stream, self.send_stream = get_socket_stream()
+        
         if not self.is_connect:
-            port = 1  # Match the setting on the HC-05 module
-            self.socket.connect((ADRESSE, port))
+            if sys.platform == "win32":
+                port = 1  # Match the setting on the HC-05 module
+                self.socket.connect((ADRESSE, port))
+            else:
+                self.socket.connect()
             self.is_connect = True
             self.last_communication_time = time()
             self.send("c")
@@ -29,35 +67,65 @@ class BlueToothObject:
         return False
     
     def send(self, text):
-        if self.is_connect:
+        if self.is_connect and (self.send_stream or sys.platform == "win32"):
             self.next_text_to_send += text + "#"
             return True
         return False
 
     def update(self):
-        if self.is_connect:
-            if self.next_text_to_send != "":
-                if time() - self.last_send > self.min_time_to_send:
-                    self.socket.send(bytes(self.next_text_to_send, 'UTF-8'))
-                    self.next_text_to_send = ""
-                    self.last_send = time()
+        try:
+            if self.is_connect and (self.send_stream or sys.platform == "win32"):
+                if self.next_text_to_send != "":
+                    if time() - self.last_send > self.min_time_to_send:
+                        if sys.platform == "win32":
+                            self.socket.send(bytes(self.next_text_to_send, 'UTF-8'))
+                        else:
+                            self.send_stream.write(bytes(self.next_text_to_send, 'UTF-8'))
+                            self.send_stream.flush()
+                        self.next_text_to_send = ""
+                        self.last_send = time()
+        except:
+            pass
     
     def recieve(self):
         if self.is_connect:
             text = self.last_recieve
             while 1:
-                ready_to_read, _, _ = select.select([self.socket], [], [], 0)
-                if ready_to_read:
-                    self.last_communication_time = time()
-                    # Add the next caractere
-                    char = repr(self.socket.recv(1)).split("'")[1]
-                    if char == "#":
-                        break
+                if sys.platform == "win32":
+                    ready_to_read, _, _ = select.select([self.socket], [], [], 0)
+                    if ready_to_read:
+                        self.last_communication_time = time()
+                        # Add the next caractere
+                        try:
+                            char_bytes = self.socket.recv(1)
+                            char_str = char_bytes.decode(encoding="ASCII")
+                        except:
+                            pass
+                        if char_str == "#":
+                            break
+                        else:
+                            text += char_str
                     else:
-                        text += char
+                        self.last_recieve = text
+                        return None
                 else:
-                    self.last_recieve = text
-                    return None
+                    ready_to_read = self.recv_stream.ready()
+                    if ready_to_read > 0:
+                        self.last_communication_time = time()
+                        # Add the next caractere
+                        try:
+                            char_int = self.recv_stream.read()
+                            char_bytes = char_int.to_bytes(1, byteorder="little")
+                            char_str = char_bytes.decode(encoding="ASCII")
+                        except:
+                            pass
+                        if char_str == "#":
+                            break
+                        else:
+                            text += char_str
+                    else:
+                        self.last_recieve = text
+                        return None
             if len(text) >= 2:
                 if text[-1] == "n" and text[-2] == "\\":
                     # Remove "\n" suffix 
@@ -87,7 +155,6 @@ class Request:
     loop_iter = 0
     
     def __init__(self) -> None:
-        # threading.Thread(target=self.loop).start()
         Clock.schedule_interval(self.loop, 1/60)
         self.bind(self.on_recieve)
     
@@ -129,7 +196,6 @@ class Request:
                 print("Print :", text)
             if text[0] == "speed":
                 self.last_acc = self.acc
-                
                 try:
                     self.acc = int(text[1])
                 except:
@@ -143,24 +209,3 @@ Api = Request()
 
 
 __all__ = ("BlueTooth", "Api", )
-
-
-if __name__ == '__main__':
-    b = BlueToothObject()
-    b.connect()
-    while 1:
-        text = input('>>> ')
-        if text == "exit":
-            break
-        elif text != "":
-            b.send(text)
-        
-        recept = None
-        while 1:
-            recept = b.recieve()
-            if recept != "":
-                print(recept)
-            else:
-                break
-    
-    b.deconnect()

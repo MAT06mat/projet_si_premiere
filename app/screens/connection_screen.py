@@ -5,14 +5,14 @@ from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from kivy.animation import Animation
 from kivy.graphics import Line, Color
-from kivy.properties import BooleanProperty
 from kivy.clock import Clock
 from kivy.app import App
 
-import threading, asyncio
 
 from custom_resize_button import CustomResizeButton
 from bluetooth import BlueTooth
+
+import threading, asyncio
 
 
 Builder.load_file("screens/connection_screen.kv")
