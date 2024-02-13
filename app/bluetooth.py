@@ -1,7 +1,7 @@
 ADRESSE = "00:0E:EA:CF:58:14"
 
 
-from time import time
+from time import time, sleep
 from kivy.clock import Clock
 from kivy.app import App
 
@@ -61,10 +61,10 @@ class BlueToothObject:
                 self.socket.connect((ADRESSE, port))
             else:
                 self.socket.connect()
-            self.is_connect = True
-            self.last_communication_time = time()
             self.send("c")
             print("Bluetooth is connected.")
+            self.is_connect = True
+            self.last_communication_time = time() + 2
             return True
         return False
     
@@ -96,7 +96,8 @@ class BlueToothObject:
                 if sys.platform == "win32":
                     ready_to_read, _, _ = select.select([self.socket], [], [], 0)
                     if ready_to_read:
-                        self.last_communication_time = time()
+                        if self.last_communication_time < time():
+                            self.last_communication_time = time()
                         # Add the next caractere
                         try:
                             char_bytes = self.socket.recv(1)

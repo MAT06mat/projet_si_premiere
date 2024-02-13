@@ -90,7 +90,7 @@ void setup()
     pinMode(TxD, OUTPUT);
     setupBlueToothConnection();
     
-    led_pulse_finish();
+    led_pulse(35000);
     
     Serial.println("Démarrage en terminé");
 }
@@ -298,21 +298,21 @@ void led_rainbow(int led_start, int led_finish)
     pixels.show();
 }
 
-void led_pulse_finish()
+void led_pulse(int color)
 {
     float a = 0;
     while (a <= 3.14)
     {
         for (int i = 0; i < 16; i++)
         {
-            pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(25500, 255, 255 * sin(a))));
+            pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(color, 255, 255 * sin(a))));
         }
 
         pixels.show();
         a += 0.01;
         if (1.56 <= a and a <= 1.58 )
         {
-            delay(1000);
+            delay(500);
             a = 1.59;
         }
         delay(3);
@@ -387,7 +387,13 @@ void calibrate(uint32_t timeout)
                 opacities[i] -= 20;
                 if (opacities[i] < 0) opacities[i] = 0;
                 int opacity = opacities[i];
-                pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(40000, 255, opacity)));
+                /* Color code :
+                 *  - Dark blue : 40000
+                 *  - Cyan : 35000
+                 *  - Red : 0
+                 *  - Green : 25500
+                 */
+                pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(35000, 255, opacity)));
             }
 
             pixels.show();
@@ -433,6 +439,7 @@ void setupBlueToothConnection()
 void connect()
 {
     client_connected = true;
+    led_pulse(25500);
     Serial.println("Client bluetooth connecté !");
     lastCommunicationTime = millis();
 }
@@ -442,6 +449,7 @@ void disconnect()
     client_connected = false;
     left = false;
     right = false;
+    led_pulse(100);
     Serial.println("Client bluetooth déconnecté !");
 }
 
