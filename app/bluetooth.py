@@ -39,6 +39,7 @@ class BlueToothObject:
     last_recieve = ""
     last_communication_time = 0
     time_out_duration = 2
+    connexion_time = 0
     last_send = time()
     min_time_to_send = 0.2
     next_text_to_send = ""
@@ -64,7 +65,8 @@ class BlueToothObject:
             self.send("c")
             print("Bluetooth is connected.")
             self.is_connect = True
-            self.last_communication_time = time() + 2
+            self.last_communication_time = time()
+            self.connexion_time = time()
             return True
         return False
     
@@ -96,8 +98,7 @@ class BlueToothObject:
                 if sys.platform == "win32":
                     ready_to_read, _, _ = select.select([self.socket], [], [], 0)
                     if ready_to_read:
-                        if self.last_communication_time < time():
-                            self.last_communication_time = time()
+                        self.last_communication_time = time()
                         # Add the next caractere
                         try:
                             char_bytes = self.socket.recv(1)
@@ -178,7 +179,7 @@ class Request:
             self.__call("on_recieve", recept)
         
         # Déctection de la déconnection
-        if BlueTooth.is_connect:
+        if BlueTooth.is_connect and BlueTooth.connexion_time + 5 < time():
             if time() - BlueTooth.last_communication_time > BlueTooth.time_out_duration:
                 BlueTooth.deconnect()
                 app = App.get_running_app()

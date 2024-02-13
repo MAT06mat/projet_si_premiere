@@ -36,12 +36,13 @@ SoftwareSerial blueToothSerial(RxD, TxD);
 String last_recieve = "";
 bool client_connected = false;
 unsigned long lastCommunicationTime = 0;
-const unsigned long timeoutDuration = 2000;
+const unsigned long timeoutDuration = 3000;
 
 // -------------------- OTHER --------------------
 
 bool left = false;
 bool right = false;
+bool warning = false;
 bool dcc = false;
 int led_mode = 1;
 //  led_mode :
@@ -118,67 +119,70 @@ void loop()
     if (millis() - lastCommunicationTime > timeoutDuration and client_connected)
     {
         Serial.println("BlueTooth TimeOut");
-        disconnect();
+        b_disconnect();
     }
 
     // Détecter la réception
     String recept = bluetooth_recv();
     if (recept != "")
     {
-        lastCommunicationTime = millis();
+        // Update lastCommunicationTime
+        if (lastCommunicationTime < millis())
+        {
+            lastCommunicationTime = millis();
+        }
+        
         Serial.println(recept);
 
-        if (recept.endsWith("c") or recept == "c")
+        if (test(recept, "c"))
         {
             Serial.println("App Signal");
-            connect();
+            b_connect();
         }
-        else if (test(recept, "d"))
+        else if (test(recept, "d") and client_connected)
         {
             Serial.println("App Signal");
-            disconnect();
+            b_disconnect();
         }
-        else if (test(recept, "s_r"))
+        else if (test(recept, "s_r") and client_connected)
         {
             right = false;
         }
-        else if (test(recept, "r"))
+        else if (test(recept, "r") and client_connected)
         {
             left = false;
             right = true;
             iter_led = 0;
         }
-        else if (test(recept, "s_l"))
+        else if (test(recept, "s_l") and client_connected)
         {
             left = false;
         }
-        else if (test(recept, "l"))
+        else if (test(recept, "l") and client_connected)
         {
             right = false;
             left = true;
             iter_led = 0;
         }
-        else if (test(recept, "s_w"))
+        else if (test(recept, "s_w") and client_connected)
         {
-            left = false;
-            right = false;
+            warning = false;
         }
-        else if (test(recept, "w"))
+        else if (test(recept, "w") and client_connected)
         {
-            right = true;
-            left = true;
+            warning = true;
             iter_led = 0;
         }
-        else if (test(recept, "s_stop"))
+        else if (test(recept, "s_stop") and client_connected)
         {
             dcc = false;
         }
-        else if (test(recept, "stop"))
+        else if (test(recept, "stop") and client_connected)
         {
             dcc = true;
         } else if (not client_connected) {
             Serial.println("Recieve Signal");
-            connect();
+            b_connect();
         }
     }
 
@@ -236,7 +240,7 @@ void led()
             led_show(0, 16, 255, 0, 0);
         }
     }
-    if (right)
+    if (right or warning)
     {
         if (iter_led <= 40)
         {
@@ -251,7 +255,7 @@ void led()
             }
         }
     }
-    if (left)
+    if (left or warning)
     {
         if (iter_led <= 40)
         {
@@ -436,21 +440,29 @@ void setupBlueToothConnection()
     blueToothSerial.flush();
 }
 
-void connect()
+void b_connect()
 {
-    client_connected = true;
+    blueToothSerial.print("ok");
     led_pulse(25500);
+    client_connected = true;
+    reset_led();
     Serial.println("Client bluetooth connecté !");
     lastCommunicationTime = millis();
 }
 
-void disconnect()
+void b_disconnect()
 {
+    led_pulse(100);
     client_connected = false;
+    reset_led();
+    Serial.println("Client bluetooth déconnecté !");
+}
+
+void reset_led()
+{
     left = false;
     right = false;
-    led_pulse(100);
-    Serial.println("Client bluetooth déconnecté !");
+    warning = false;
 }
 
 String bluetooth_recv()

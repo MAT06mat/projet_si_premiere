@@ -83,7 +83,7 @@ class ConnectDescription(ConnectLabel):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (0.9, None)
-        self.pos_hint = {"center_x": 0.5, "center_y": 0.63}
+        self.pos_hint = {"center_x": 0.5, "center_y": 0.6}
         self.text = """[color=202020]Pour continuer vous devez vous connecter à un appareil allumé.\n
 Vérifiez que votre bluetooth est bien activé.[/color]"""
         self.anim += Animation(d=1, opacity=1, t='in_out_cubic') & Animation(d=1, pos_hint={"center_x": 0.5, "center_y": 0.65}, t="out_circ")
@@ -97,7 +97,7 @@ class ConnectButton(CustomResizeButton):
         super().__init__(**kwargs)
         self.source = "images/connect_button.png"
         self.size_hint = (0.5, None)
-        self.pos_hint = {"center_x": 0.5, "center_y": 0.23}
+        self.pos_hint = {"center_x": 0.5, "center_y": 0.2}
         self.opacity = 0
         self.animation = Animation(d=2.5, opacity=0)
         self.animation += Animation(d=1, opacity=1, t='in_out_cubic') & Animation(d=1, pos_hint={"center_x": 0.5, "center_y": 0.25}, t="out_circ")
@@ -176,7 +176,7 @@ class SettingButton(CustomResizeButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.source = "images/setting_button.png"
-        self.pos_hint = {'top': 0.97, 'right': 1}
+        self.pos_hint = {'top': 0.95, 'right': 1}
         self.size_hint = (0.1, None)
         self.opacity = 0
         self.animation = Animation(d=2.5, opacity=0)
