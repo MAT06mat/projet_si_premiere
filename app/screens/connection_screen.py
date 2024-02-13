@@ -29,11 +29,11 @@ class AnimateImage(Image):
         super().__init__(**kwargs)
         self.opacity = 0
         self.anim = Animation(d=0.5, opacity=1)
-        self.anim += Animation(d=2, opacity=1)
+        self.anim += Animation(d=1, opacity=1)
         if self.pos_hint == {"top": 1}:
-            self.anim += Animation(d=2, pos_hint={"top": 2}, t='in_cubic') & Animation(d=3, opacity=0)
+            self.anim += Animation(d=2, pos_hint={"top": 2}, t='in_cubic') & Animation(d=2, opacity=0)
         else:
-            self.anim += Animation(d=2, pos_hint={"y": -1}, t='in_cubic') & Animation(d=3, opacity=0)
+            self.anim += Animation(d=2, pos_hint={"y": -1}, t='in_cubic') & Animation(d=2, opacity=0)
         self.anim.start(self)
 
 
@@ -66,9 +66,7 @@ class ConnectLabel(Label):
         self.halign = "center"
         self.markup = True
         self.opacity = 0
-        self.anim = Animation(d=4.5, opacity=0)
-        self.anim += Animation(d=1, opacity=1, t='in_out_cubic')
-        self.anim.start(self)
+        self.anim = Animation(d=2.5, opacity=0)
 
 
 class ConnectTitle(ConnectLabel):
@@ -77,15 +75,19 @@ class ConnectTitle(ConnectLabel):
         self.pos_hint = {"center_x": 0.5}
         self.size_hint = (0.8, 0.1)
         self.text = "[color=010101][b]Bienvenue sur Safe Cycling[/b][/color]"
+        self.anim += Animation(d=1, opacity=1, t='in_out_cubic')
+        self.anim.start(self)
 
 
 class ConnectDescription(ConnectLabel):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (0.9, None)
-        self.pos_hint = {"center_x": 0.5, "center_y": 0.65}
+        self.pos_hint = {"center_x": 0.5, "center_y": 0.63}
         self.text = """[color=202020]Pour continuer vous devez vous connecter à un appareil allumé.\n
 Vérifiez que votre bluetooth est bien activé.[/color]"""
+        self.anim += Animation(d=1, opacity=1, t='in_out_cubic') & Animation(d=1, pos_hint={"center_x": 0.5, "center_y": 0.65}, t="out_circ")
+        self.anim.start(self)
 
 
 class ConnectButton(CustomResizeButton):
@@ -95,10 +97,10 @@ class ConnectButton(CustomResizeButton):
         super().__init__(**kwargs)
         self.source = "images/connect_button.png"
         self.size_hint = (0.5, None)
-        self.pos_hint = {"center_x": 0.5, "center_y": 0.25}
+        self.pos_hint = {"center_x": 0.5, "center_y": 0.23}
         self.opacity = 0
-        self.animation = Animation(d=4.5, opacity=0)
-        self.animation += Animation(d=1, opacity=1, t='in_out_cubic')
+        self.animation = Animation(d=2.5, opacity=0)
+        self.animation += Animation(d=1, opacity=1, t='in_out_cubic') & Animation(d=1, pos_hint={"center_x": 0.5, "center_y": 0.25}, t="out_circ")
         self.animation.start(self)
         self.animations_click_self = Animation(d=0.5, pos_hint={"center_x": 0.5, "center_y": 0.32}, t='in_out_cubic')
         self.animations_click_loading = Animation(d=0.5, pos_hint={"center_x": 0.5, "center_y": 0.18}, t='in_out_cubic')
@@ -174,11 +176,11 @@ class SettingButton(CustomResizeButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.source = "images/setting_button.png"
-        self.pos_hint = {'top': 1, 'right': 1}
+        self.pos_hint = {'top': 0.97, 'right': 1}
         self.size_hint = (0.1, None)
         self.opacity = 0
-        self.animation = Animation(d=4.5, opacity=0)
-        self.animation += Animation(d=1, opacity=1, t='in_out_cubic')
+        self.animation = Animation(d=2.5, opacity=0)
+        self.animation += Animation(d=1, opacity=1, t='in_out_cubic') & Animation(d=1, pos_hint={'top': 1, 'right': 1}, t="out_circ")
         self.animation.start(self)
     
     def on_custom_press(self, *args):
@@ -190,7 +192,7 @@ class Background(Widget):
         super().__init__(**kwargs)
         self.opacity = 0
         self.size_hint = (1, 1)
-        self.anim = Animation(d=3.5, opacity=0)
+        self.anim = Animation(d=1.5, opacity=0)
         self.anim += Animation(d=1, opacity=1, t='in_out_cubic')
         self.anim.start(self)
 
