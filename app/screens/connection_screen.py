@@ -12,7 +12,13 @@ from kivy.app import App
 from custom_resize_button import CustomResizeButton
 from bluetooth import BlueTooth
 
-import threading, asyncio
+import threading, asyncio, sys, time
+
+if sys.platform != "win32":
+    from android.permissions import request_permissions, check_permission, Permission
+    # Exemple:
+    # request_permissions([Permission.BLUETOOTH_CONNECT])
+    # check_permission(Permission.BLUETOOTH_CONNECT)
 
 
 Builder.load_file("screens/connection_screen.kv")
@@ -110,6 +116,10 @@ class ConnectButton(CustomResizeButton):
             app.manager.push("MainMenu")
     
     def condition(self):
+        if sys.platform != "win32":
+            if not check_permission(Permission.BLUETOOTH_CONNECT):
+                request_permissions([Permission.BLUETOOTH_CONNECT])
+            return (not self.loading and check_permission(Permission.BLUETOOTH_CONNECT))
         return not self.loading
     
     def on_custom_press(self, *args):
