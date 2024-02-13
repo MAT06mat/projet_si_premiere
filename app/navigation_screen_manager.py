@@ -10,6 +10,7 @@ class NavigationScreenManager(ScreenManager):
         self.transition = SlideTransition(duration=0.2)
     
     def push(self, screen_name):
+        self.screens
         if screen_name not in self.screen_stack:
             self.transition.direction = "left"
             self.screen_stack.append(self.current)
@@ -17,6 +18,13 @@ class NavigationScreenManager(ScreenManager):
 
     def pop(self):
         if len(self.screen_stack) > 0:
+            self.transition.direction = "right"
+            screen_name = self.screen_stack[-1]
+            self.current = screen_name
+            del self.screen_stack[-1]
+    
+    def pop_all(self):
+        while len(self.screen_stack) > 0:
             self.transition.direction = "right"
             screen_name = self.screen_stack[-1]
             self.current = screen_name

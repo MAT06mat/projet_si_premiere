@@ -5,14 +5,14 @@ from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from kivy.animation import Animation
 from kivy.graphics import Line, Color
-from kivy.clock import Clock
+from kivy.clock import Clock, mainthread
 from kivy.app import App
 
 
 from custom_resize_button import CustomResizeButton
 from bluetooth import BlueTooth
 
-import threading, asyncio, sys, time
+import threading, asyncio, sys
 
 if sys.platform != "win32":
     from android.permissions import request_permissions, check_permission, Permission
@@ -90,7 +90,6 @@ Vérifiez que votre bluetooth est bien activé.[/color]"""
 
 class ConnectButton(CustomResizeButton):
     loading = False
-    change_screen = False
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -107,13 +106,6 @@ class ConnectButton(CustomResizeButton):
         self.animations_click_reverse_self = Animation(d=1, pos_hint={"center_x": 0.5, "center_y": 0.25}, t='in_out_cubic')
         self.animations_click_reverse_loading = Animation(d=0.5, pos_hint={"center_x": 0.5, "center_y": 0.25}, t='in_out_cubic')
         self.animations_click_reverse_loading &= Animation(d=0.5, opacity=0, t='in_out_cubic')
-        Clock.schedule_interval(self.loop, 1/20)
-    
-    def loop(self, *args):
-        if self.change_screen:
-            self.change_screen = False
-            app = App.get_running_app()
-            app.manager.push("MainMenu")
     
     def condition(self):
         if sys.platform != "win32":
@@ -132,7 +124,7 @@ class ConnectButton(CustomResizeButton):
     def connect_bluetooth(self, *args):
         try:
             asyncio.run(BlueTooth.connect())
-            self.change_screen = True
+            self.change_screen()
         except Exception as e:
             print(f"Error connecting Bluetooth: {e}")
             error = "Aucun appareil n'est détecté"
@@ -142,6 +134,12 @@ class ConnectButton(CustomResizeButton):
             self.parent.connect_message.message(error)
         finally:
             Clock.schedule_once(self.reverse_anim, 0.5)
+    
+    @mainthread
+    def change_screen(self, *args):
+        app = App.get_running_app()
+        app.manager.push('MainMenu')
+        
     
     def reverse_anim(self, *args):
         self.animations_click_reverse_self.start(self)

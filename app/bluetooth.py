@@ -3,6 +3,8 @@ ADRESSE = "00:0E:EA:CF:58:14"
 
 from time import time
 from kivy.clock import Clock
+from kivy.app import App
+
 import sys
 
 
@@ -139,6 +141,7 @@ class BlueToothObject:
         if self.is_connect:
             self.send("d")
             self.socket.close()
+            self.socket = None
             self.is_connect = False
             print("Bluetooth is deconnected.")
             return True
@@ -149,7 +152,7 @@ BlueTooth = BlueToothObject()
 
 
 class Request:
-    func = {"on_recieve": [], "bluetooth_time_out": []}
+    func = {"on_recieve": []}
     acc = 0
     last_acc = 0
     loop_iter = 0
@@ -177,7 +180,11 @@ class Request:
         if BlueTooth.is_connect:
             if time() - BlueTooth.last_communication_time > BlueTooth.time_out_duration:
                 BlueTooth.deconnect()
-                self.__call("bluetooth_time_out")
+                app = App.get_running_app()
+                for screen in app.manager.screens:
+                    if screen.name == "Connection":
+                        screen.children[0].connect_message.message("Appareil déconnecté (Time Out)")
+                app.manager.pop_all()
         
         if self.loop_iter >= 60:
             self.loop_iter = 0
