@@ -119,7 +119,6 @@ class ConnectButton(CustomResizeButton):
         if sys.platform != "win32":
             if not check_permission(Permission.BLUETOOTH_CONNECT):
                 request_permissions([Permission.BLUETOOTH_CONNECT])
-            return (not self.loading and check_permission(Permission.BLUETOOTH_CONNECT))
         return not self.loading
     
     def on_custom_press(self, *args):
@@ -136,7 +135,11 @@ class ConnectButton(CustomResizeButton):
             self.change_screen = True
         except Exception as e:
             print(f"Error connecting Bluetooth: {e}")
-            self.parent.connect_message.message("Aucun appareil n'est détecté")
+            error = "Aucun appareil n'est détecté"
+            if sys.platform != "win32":
+                if not check_permission(Permission.BLUETOOTH_CONNECT):
+                    error = "L'autorisation BLUETOOTH est requise"
+            self.parent.connect_message.message(error)
         finally:
             Clock.schedule_once(self.reverse_anim, 0.5)
     
