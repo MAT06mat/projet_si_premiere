@@ -41,8 +41,21 @@ const unsigned long timeoutDuration = 3000;
 // -------------------- BLUETOOTH --------------------
 
 #include "Ultrasonic.h"
-
 Ultrasonic ultrasonic(7);
+
+// -------------------- MOTOR --------------------
+
+#include "Grove_Motor_Driver_TB6612FNG.h"
+
+MotorDriver motor;
+
+// set speed to 120 revolutions per minute
+uint16_t rpm = 120;
+int pos_right = 20*50;
+int pos_left = -20*50;
+int pos_null = 0;
+int go_pos = 0;
+int pos = 0;
 
 // -------------------- OTHER --------------------
 
@@ -96,6 +109,12 @@ void setup()
     pinMode(RxD, INPUT);
     pinMode(TxD, OUTPUT);
     setupBlueToothConnection();
+
+    // -------------------- MOTOR --------------------
+    
+    motor.init();
+    
+    // -------------------- INIT FINISH --------------------
     
     led_pulse(35000);
     
@@ -153,21 +172,25 @@ void loop()
         else if (test(recept, "s_r") and client_connected)
         {
             right = false;
+            go_pos = pos_null;
         }
         else if (test(recept, "r") and client_connected)
         {
             left = false;
             right = true;
+            go_pos = pos_right;
             iter_led = 0;
         }
         else if (test(recept, "s_l") and client_connected)
         {
             left = false;
+            go_pos = pos_null;
         }
         else if (test(recept, "l") and client_connected)
         {
             right = false;
             left = true;
+            go_pos = pos_left;
             iter_led = 0;
         }
         else if (test(recept, "s_w") and client_connected)
@@ -200,18 +223,31 @@ void loop()
         blueToothSerial.print(text);
         blueToothSerial.print('#');
     }
+
+    // Moteur
+    if (go_pos > pos) 
+    {
+      droite();
+    }
+    if (go_pos < pos) 
+    {
+      gauche();
+    }
     
     // Envoyer des messages
     if (loop_iter >= 50)
     {
-        // Laisser une variable à envoyer régulièrement pour ping le client
-        blueToothSerial.print("s:");
-        blueToothSerial.print(last_dcc_iter);
-        blueToothSerial.print('#');
-        
-        blueToothSerial.print("d:");
-        blueToothSerial.print(ultrasonic.MeasureInCentimeters());
-        blueToothSerial.print('#');
+        if (client_connected)
+        {
+            // Laisser une variable à envoyer régulièrement pour ping le client
+            blueToothSerial.print("s:");
+            blueToothSerial.print(last_dcc_iter);
+            blueToothSerial.print('#');
+            
+            blueToothSerial.print("d:");
+            blueToothSerial.print(ultrasonic.MeasureInCentimeters());
+            blueToothSerial.print('#');
+        }
 
         loop_iter = 0;
     }
@@ -222,7 +258,9 @@ void loop()
     {
         iter_led = 0;
     }
+    
     led();
+    
     delay(10);
 }
 
@@ -289,6 +327,7 @@ void led()
             led_show(1, 6, 0, 0, 0, 0);
         }
     }
+    pixels.show();
 
     // Update rainbow cycle
     if (firstPixelHue > 65536)
@@ -299,7 +338,6 @@ void led()
 void led_clean()
 {
     pixels.clear();
-    pixels.show();
 }
 
 void led_show(int led_start, int led_finish, int r, int g, int b, int a)
@@ -308,7 +346,6 @@ void led_show(int led_start, int led_finish, int r, int g, int b, int a)
     {
         pixels.setPixelColor(i, pixels.Color(r, g, b, a));
     }
-    pixels.show();
 }
 
 void led_rainbow(int led_start, int led_finish)
@@ -318,7 +355,6 @@ void led_rainbow(int led_start, int led_finish)
         uint32_t pixelHue = firstPixelHue + (i * 65536L / pixels.numPixels());
         pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(pixelHue, 255, 255)));
     }
-    pixels.show();
 }
 
 void led_pulse(int color)
@@ -435,7 +471,7 @@ void calibrate(uint32_t timeout)
 void get_acceleration()
 {
     int acc_x = icm20600.getAccelerationX() - x_moyenne;
-    if (acc_x < -300)
+    if (acc_x < -350)
     {
         last_dcc_iter = 0;
     }
@@ -473,6 +509,7 @@ void b_disconnect()
 {
     led_pulse(100);
     client_connected = false;
+    go_pos = pos_null;
     reset_led();
     Serial.println("Client bluetooth déconnecté !");
 }
@@ -509,6 +546,20 @@ String bluetooth_recv()
     }
     last_recieve = "";
     return text;
+}
+
+// -------------------- MOTOR --------------------
+
+void droite(){
+  int s = 20;
+  motor.stepperRun(HALF_STEP, s, rpm);
+  pos += s;
+}
+
+void gauche(){
+  int s = -20;
+  motor.stepperRun(HALF_STEP, s, rpm);
+  pos += s;
 }
 
 // -------------------- OTHER --------------------
