@@ -38,7 +38,7 @@ class BlueToothObject:
     is_connect = False
     last_recieve = ""
     last_communication_time = 0
-    time_out_duration = 2
+    time_out_duration = 3
     connexion_time = 0
     last_send = time()
     min_time_to_send = 0.2
