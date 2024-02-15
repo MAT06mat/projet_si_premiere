@@ -101,14 +101,14 @@ class BlueToothObject:
                         self.last_communication_time = time()
                         # Add the next caractere
                         try:
-                            char_bytes = self.socket.recv(1)
-                            char_str = char_bytes.decode(encoding="ASCII")
-                        except:
-                            pass
-                        if char_str == "#":
-                            break
-                        else:
-                            text += char_str
+                            char_byte = self.socket.recv(1)
+                            char_str = char_byte.decode(encoding="ASCII")
+                            if char_str == "#":
+                                break
+                            else:
+                                text += char_str
+                        except Exception as e:
+                            print("Exeption lors du decodage :", e)
                     else:
                         self.last_recieve = text
                         return None
@@ -121,12 +121,12 @@ class BlueToothObject:
                             char_int = self.recv_stream.read()
                             char_bytes = char_int.to_bytes(1, byteorder="little")
                             char_str = char_bytes.decode(encoding="ASCII")
+                            if char_str == "#":
+                                break
+                            else:
+                                text += char_str
                         except:
                             pass
-                        if char_str == "#":
-                            break
-                        else:
-                            text += char_str
                     else:
                         self.last_recieve = text
                         return None
@@ -156,6 +156,7 @@ BlueTooth = BlueToothObject()
 class Request:
     func = {"on_recieve": []}
     acc = 0
+    dist = 0
     last_acc = 0
     loop_iter = 0
     
@@ -199,17 +200,23 @@ class Request:
             # text = "print:Bonjour"
             # text = "set:led:HIGH"
             text = text.split(':')
-            if text[0] == "print":
+            if text[0] == "p":
                 text.pop(0)
                 text = ":".join(text)
                 print("Print :", text)
-            if text[0] == "speed":
+            if text[0] == "s":
                 self.last_acc = self.acc
                 try:
                     self.acc = int(text[1])
                 except:
                     self.acc = 0
-                print(self.acc)
+                print("Acc:", self.acc)
+            if text[0] == "d":
+                try:
+                    self.dist = int(text[1])
+                except:
+                    self.dist = 0
+                print("dist:", self.dist)
         except Exception as e:
             print("Exeption on decode message :", e)
     

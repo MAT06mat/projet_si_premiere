@@ -29,14 +29,20 @@ int x;
 // -------------------- BLUETOOTH --------------------
 
 #include <SoftwareSerial.h> //Software Serial Port
-#define RxD 6
-#define TxD 7
+#define RxD 10
+#define TxD 11
 
 SoftwareSerial blueToothSerial(RxD, TxD);
 String last_recieve = "";
 bool client_connected = false;
 unsigned long lastCommunicationTime = 0;
 const unsigned long timeoutDuration = 3000;
+
+// -------------------- BLUETOOTH --------------------
+
+#include "Ultrasonic.h"
+
+Ultrasonic ultrasonic(7);
 
 // -------------------- OTHER --------------------
 
@@ -190,19 +196,24 @@ void loop()
     if (Serial.available() > 0)
     {
         String text = Serial.readString();
-        blueToothSerial.print("print:");
+        blueToothSerial.print("p:");
         blueToothSerial.print(text);
         blueToothSerial.print('#');
     }
-
+    
     // Envoyer des messages
-    if (loop_iter >= 100)
+    if (loop_iter >= 50)
     {
-        loop_iter = 0;
         // Laisser une variable à envoyer régulièrement pour ping le client
-        blueToothSerial.print("speed:");
+        blueToothSerial.print("s:");
         blueToothSerial.print(last_dcc_iter);
         blueToothSerial.print('#');
+        
+        blueToothSerial.print("d:");
+        blueToothSerial.print(ultrasonic.MeasureInCentimeters());
+        blueToothSerial.print('#');
+
+        loop_iter = 0;
     }
 
     get_acceleration();
@@ -237,7 +248,7 @@ void led()
         else
         {
             // Set all Led to red
-            led_show(0, 16, 255, 0, 0);
+            led_show(0, 16, 255, 0, 0, 255);
         }
     }
     if (right or warning)
@@ -251,8 +262,12 @@ void led()
             else
             {
                 // Set right Led to orange
-                led_show(9, 14, 255, 40, 0);
+                led_show(9, 14, 255, 40, 0, 255);
             }
+        }
+        else
+        {
+            led_show(9, 14, 0, 0, 0, 0);
         }
     }
     if (left or warning)
@@ -266,8 +281,12 @@ void led()
             else
             {
                 // Set left Led to orange
-                led_show(1, 6, 255, 40, 0);
+                led_show(1, 6, 255, 40, 0, 255);
             }
+        }
+        else
+        {
+            led_show(1, 6, 0, 0, 0, 0);
         }
     }
 
@@ -283,11 +302,11 @@ void led_clean()
     pixels.show();
 }
 
-void led_show(int led_start, int led_finish, int r, int g, int b)
+void led_show(int led_start, int led_finish, int r, int g, int b, int a)
 {
     for (int i = led_start; i < led_finish; i++)
     {
-        pixels.setPixelColor(i, pixels.Color(r, g, b, 255));
+        pixels.setPixelColor(i, pixels.Color(r, g, b, a));
     }
     pixels.show();
 }
