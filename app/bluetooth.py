@@ -182,18 +182,22 @@ class Request:
         # Déctection de la déconnection
         if BlueTooth.is_connect and BlueTooth.connexion_time + 5 < time():
             if time() - BlueTooth.last_communication_time > BlueTooth.time_out_duration:
-                BlueTooth.deconnect()
-                app = App.get_running_app()
-                for screen in app.manager.screens:
-                    if screen.name == "Connection":
-                        screen.children[0].connect_message.message("Appareil déconnecté (Time Out)")
-                app.manager.pop_all()
+                self.deconnect("Appareil déconnecté (Time Out)")
         
         if self.loop_iter >= 60:
             self.loop_iter = 0
             BlueTooth.send("p")
         
         BlueTooth.update()
+    
+    def deconnect(self, message=""):
+        BlueTooth.deconnect()
+        app = App.get_running_app()
+        if message != "":
+            for screen in app.manager.screens:
+                if screen.name == "Connection":
+                    screen.children[0].connect_message.message(message)
+        app.manager.pop_all()
 
     def on_recieve(self, text):
         try:

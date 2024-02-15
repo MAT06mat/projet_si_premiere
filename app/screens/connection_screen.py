@@ -141,7 +141,6 @@ class ConnectButton(CustomResizeButton):
     def change_screen(self, *args):
         app = App.get_running_app()
         app.manager.push('MainMenu')
-        
     
     def reverse_anim(self, *args):
         self.animations_click_reverse_self.start(self)
@@ -184,6 +183,7 @@ class SettingButton(CustomResizeButton):
         self.animation.start(self)
     
     def on_custom_press(self, *args):
+        ...
         return super().on_custom_press(*args)
 
 
