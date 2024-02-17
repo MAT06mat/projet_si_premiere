@@ -25,9 +25,19 @@
     source: "images/warning.png"
     size_hint: (None, None)
 
-
 <SettingButton>:
     height: self.width * 1.66
+
+<SlideButton@Button>:
+    markup: True
+    font_size: self.parent.width / 12
+    size_hint: (0.02, 0.02)
+    halign: 'center'
+    valign: 'middle'
+    color: (0.2, 0.2, 0.2, 1)
+    bold: True
+    background_normal: ""
+    background_color: (0, 0, 0, 0)
 
 <SlideBar>:
     canvas.before:
@@ -60,16 +70,11 @@
         font_size: root.width / 8
         color: (0.1, 0.1, 0.1, 1)
         bold: True
-    Button:
-        markup: True
+    SlideButton:
         text: "[ref=deco]Deconnexion[/ref]"
         pos_hint: {"center_x": 0.7, "center_y": 0.8}
-        size_hint: (0.02, 0.02)
-        halign: 'center'
-        valign: 'middle'
-        font_size: root.width / 12
-        color: (0.2, 0.2, 0.2, 1)
-        bold: True
-        background_normal: ""
-        background_color: (0, 0, 0, 0)
         on_ref_press: root.deco()
+    SlideButton:
+        text: "[ref=setting]Paramètres[/ref]"
+        pos_hint: {"center_x": 0.7, "center_y": 0.75}
+        on_ref_press: root.settings_screen()

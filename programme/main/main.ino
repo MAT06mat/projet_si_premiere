@@ -36,7 +36,7 @@ SoftwareSerial blueToothSerial(RxD, TxD);
 String last_recieve = "";
 bool client_connected = false;
 unsigned long lastCommunicationTime = 0;
-const unsigned long timeoutDuration = 3000;
+const unsigned long timeoutDuration = 4000;
 
 // -------------------- BLUETOOTH --------------------
 

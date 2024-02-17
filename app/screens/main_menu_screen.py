@@ -2,6 +2,7 @@ from kivy.lang import Builder
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.label import Label
 from kivy.animation import Animation
+from kivy.app import App
 from kivy.clock import Clock
 
 from custom_resize_button import CustomToggleButton, CustomResizeButton
@@ -144,6 +145,12 @@ class SlideBar(RelativeLayout):
     def deco(self):
         self.reverse()
         Api.deconnect()
+    
+    def settings_screen(self):
+        self.reverse()
+        app = App.get_running_app()
+        app.manager.push("Settings")
+        
 
 
 class MainMenuScreen(RelativeLayout):

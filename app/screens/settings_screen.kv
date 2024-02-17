@@ -1,0 +1,24 @@
+<SettingsScreen>:
+    canvas.before:
+        Color:
+            rgba: (0.9, 0.9, 0.9, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<ColorButtons>:
+    spacing: self.cd.width / 4
+    padding: self.cd.width / 4
+
+<BackButton>:
+    height: self.width
+
+<ButtonTemplate>:
+    color: (0, 0, 0, 1)
+    canvas.before:
+        Color:
+            rgba: (0.8, 0.8, 0.8, 8)
+        RoundedRectangle:
+            pos: root.pos
+            size: root.size
+            radius: [root.height/2, ]

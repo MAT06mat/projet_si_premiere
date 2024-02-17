@@ -93,6 +93,7 @@ class CustomButtonBehavior(CustomPressButton):
         self.background_color = (1, 1, 1, 0)
         self.image = Image(source=self.source, size=self.size, pos=self.pos, fit_mode="contain")
         self.add_widget(self.image, canvas="before")
+        self._source_change()
         self.bind(source=self._source_change, disabled_source=self._source_change, disabled=self._source_change)
         self.bind(size=self._update_image, coef_size=self._update_image, center=self._update_image)
         self.anim = Animation(d=0.1, t="in_out_quad", coef_size=0)
@@ -100,9 +101,17 @@ class CustomButtonBehavior(CustomPressButton):
     
     def _source_change(self, *args):
         if self.disabled:
-            self.image.source = self.disabled_source
+            if self.disabled_source != "":
+                self.image.source = self.disabled_source
+                self.image.color = (1, 1, 1, 1)
+            else:
+                self.image.color = (0, 0, 0, 0)
         else:
-            self.image.source = self.source
+            if self.source != "":
+                self.image.source = self.source
+                self.image.color = (1, 1, 1, 1)
+            else:
+                self.image.color = (0, 0, 0, 0)
     
     def _update_image(self, *args):
         self.image.size = (self.size[0]*(1-self.coef_size), self.size[1]*(1-self.coef_size))
