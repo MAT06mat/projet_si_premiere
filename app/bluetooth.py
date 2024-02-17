@@ -62,7 +62,7 @@ class BlueToothObject:
                 self.socket.connect((ADRESSE, port))
             else:
                 self.socket.connect()
-            self.send("c")
+            self.send("co")
             print("Bluetooth is connected.")
             self.is_connect = True
             self.last_communication_time = time()
@@ -141,7 +141,7 @@ class BlueToothObject:
     
     def deconnect(self):
         if self.is_connect:
-            self.send("d")
+            self.send("de")
             self.socket.close()
             self.socket = None
             self.is_connect = False

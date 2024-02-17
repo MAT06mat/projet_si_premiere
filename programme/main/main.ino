@@ -92,7 +92,7 @@ void setup()
         }
     #endif
 
-    pixels.setBrightness(10);
+    pixels.setBrightness(20);
     pixels.begin();
     led_init();
 
@@ -159,12 +159,12 @@ void loop()
         
         Serial.println(recept);
 
-        if (test(recept, "c"))
+        if (test(recept, "co"))
         {
             Serial.println("App Signal");
             b_connect();
         }
-        else if (test(recept, "d") and client_connected)
+        else if (test(recept, "de") and client_connected)
         {
             Serial.println("App Signal");
             b_disconnect();
@@ -209,7 +209,35 @@ void loop()
         else if (test(recept, "stop") and client_connected)
         {
             dcc = true;
-        } else if (not client_connected) {
+        }
+        else if (test(recept, "c:") and client_connected)
+        {
+            if (test(recept, "d"))
+            {
+                led_mode = 1;
+            }
+            else if (test(recept, "y"))
+            {
+                led_mode = 2;
+            }
+            else if (test(recept, "g"))
+            {
+                led_mode = 3;
+            }
+            else if (test(recept, "b"))
+            {
+                led_mode = 4;
+            }
+            else if (test(recept, "v"))
+            {
+                led_mode = 5;
+            }
+            else if (test(recept, "m"))
+            {
+                led_mode = 0;
+            }
+        }
+        else if (not client_connected) {
             Serial.println("Recieve Signal");
             b_connect();
         }
@@ -279,28 +307,52 @@ void led()
 
     if ((last_dcc_iter >= 0 and client_connected) or dcc)
     {
-        if (led_mode == 0)
+        switch(led_mode)
         {
-            led_rainbow(0, 16);
-        }
-        else
-        {
-            // Set all Led to red
-            led_show(0, 16, 255, 0, 0, 255);
+            case 0:
+                led_rainbow(0, 16);
+                break;
+            case 1:
+                led_show(0, 16, 255, 0, 0, 255); // Red
+                break;
+            case 2:
+                led_show(0, 16, 255, 40, 0, 255); // Orange
+                break;
+            case 3:
+                led_show(0, 16, 0, 255, 0, 255); // Green
+                break;
+            case 4:
+                led_show(0, 16, 0, 0, 255, 255); // Blue
+                break;
+            case 5:
+                led_show(0, 16, 200, 0, 255, 255); // Purple
+                break;
         }
     }
     if (right or warning)
     {
         if (iter_led <= 40)
-        {
-            if (led_mode == 0)
+        {   
+            switch(led_mode)
             {
-                led_rainbow(9, 14);
-            }
-            else
-            {
-                // Set right Led to orange
-                led_show(9, 14, 255, 40, 0, 255);
+                case 0:
+                    led_rainbow(9, 14);
+                    break;
+                case 1:
+                    led_show(9, 14, 255, 40, 0, 255); // Orange
+                    break;
+                case 2:
+                    led_show(9, 14, 255, 200, 0, 255); // Yellow
+                    break;
+                case 3:
+                    led_show(9, 14, 100, 255, 0, 255); // Yellow/Green
+                    break;
+                case 4:
+                    led_show(9, 14, 0, 200, 255, 255); // Cyan
+                    break;
+                case 5:
+                    led_show(9, 14, 40, 0, 255, 255); // Blue
+                    break;
             }
         }
         else
@@ -312,14 +364,26 @@ void led()
     {
         if (iter_led <= 40)
         {
-            if (led_mode == 0)
+            switch(led_mode)
             {
-                led_rainbow(1, 6);
-            }
-            else
-            {
-                // Set left Led to orange
-                led_show(1, 6, 255, 40, 0, 255);
+                case 0:
+                    led_rainbow(1, 6);
+                    break;
+                case 1:
+                    led_show(1, 6, 255, 40, 0, 255); // Orange
+                    break;
+                case 2:
+                    led_show(1, 6, 255, 200, 0, 255); // Yellow
+                    break;
+                case 3:
+                    led_show(1, 6, 100, 255, 0, 255); // Yellow/Green
+                    break;
+                case 4:
+                    led_show(1, 6, 0, 200, 255, 255); // Cyan
+                    break;
+                case 5:
+                    led_show(1, 6, 40, 0, 255, 255); // Blue
+                    break;
             }
         }
         else
@@ -450,7 +514,7 @@ void calibrate(uint32_t timeout)
                  *  - Dark blue : 40000
                  *  - Cyan : 35000
                  *  - Red : 0
-                 *  - Green : 25500
+                 *  - Green : 20500
                  */
                 pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(35000, 255, opacity)));
             }
@@ -498,7 +562,7 @@ void setupBlueToothConnection()
 void b_connect()
 {
     blueToothSerial.print("ok");
-    led_pulse(25500);
+    led_pulse(25000);
     client_connected = true;
     reset_led();
     Serial.println("Client bluetooth connecté !");
@@ -519,6 +583,7 @@ void reset_led()
     left = false;
     right = false;
     warning = false;
+    dcc = false;
 }
 
 String bluetooth_recv()

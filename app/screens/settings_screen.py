@@ -18,7 +18,6 @@ class ButtonTemplate(CustomResizeButton):
         self.value = value
     
     def on_custom_press(self, *args):
-        print("press", self.text)
         BlueTooth.send(f"{self.var}:{self.value}")
         return super().on_custom_press(*args)
 
