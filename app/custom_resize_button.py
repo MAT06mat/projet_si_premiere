@@ -150,6 +150,9 @@ class CustomToggleButton(CustomButtonBehavior):
     pressed = True
     '''Property for `CustomToggleButton`.'''
     
+    first_press = True
+    '''Property for `CustomToggleButton`.'''
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.anim_2 = Animation(d=0.1, t="in_out_quad", coef_size=0.07)
@@ -219,7 +222,8 @@ class CustomToggleButton(CustomButtonBehavior):
 
     def on_custom_press(self, *args):
         if self.touch_inside:
-            if self.pressed:
+            if self.pressed or self.first_press:
+                self.first_press = False
                 self.on_down()
             else:
                 self.on_up()
