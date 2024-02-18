@@ -54,10 +54,6 @@ class ColorButtons(StackLayout):
         self.add_widget(self.c3)
         self.add_widget(self.c4)
         self.add_widget(self.c5)
-    
-    def reset(self):
-        for b in self.children:
-            b.reset()
 
 
 class BoxScreen(BoxLayout):

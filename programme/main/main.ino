@@ -71,6 +71,8 @@ int led_mode = 1;
 int loop_iter = 0;
 int last_dcc_iter = -1;
 int iter_led = 0;
+int led_test = -1;
+
 
 // ================================================
 //                     SETUP
@@ -215,26 +217,32 @@ void loop()
             if (test(recept, "d"))
             {
                 led_mode = 1;
+                led_test = 0;
             }
             else if (test(recept, "y"))
             {
                 led_mode = 2;
+                led_test = 0;
             }
             else if (test(recept, "g"))
             {
                 led_mode = 3;
+                led_test = 0;
             }
             else if (test(recept, "b"))
             {
                 led_mode = 4;
+                led_test = 0;
             }
             else if (test(recept, "v"))
             {
                 led_mode = 5;
+                led_test = 0;
             }
             else if (test(recept, "m"))
             {
                 led_mode = 0;
+                led_test = 0;
             }
         }
         else if (not client_connected) {
@@ -301,6 +309,16 @@ void loop()
 void led()
 {
     iter_led = iter_led + 1;
+    // Update led_test iter loop
+    if (led_test >= 0)
+    {
+        led_test += 1;
+    }
+    // Reset led_test iter loop
+    if (led_test >= 100)
+    {
+        led_test = -1;
+    }
 
     // Reset all Led
     led_clean();
@@ -391,6 +409,32 @@ void led()
             led_show(1, 6, 0, 0, 0, 0);
         }
     }
+    if (led_test >= 0)
+    {
+        led_clean();
+        switch(led_mode)
+            {
+                case 0:
+                    led_rainbow(0, 16);
+                    break;
+                case 1:
+                    led_pattern(255, 40, 0, 255, 0, 0); // Orange
+                    break;
+                case 2:
+                    led_pattern(255, 200, 0, 255, 40, 0); // Yellow
+                    break;
+                case 3:
+                    led_pattern(100, 255, 0, 0, 255, 0); // Yellow/Green
+                    break;
+                case 4:
+                    led_pattern(0, 200, 255, 0, 0, 255); // Cyan
+                    break;
+                case 5:
+                    led_pattern(40, 0, 255, 200, 0, 255); // Blue
+                    break;
+            }
+    }
+
     pixels.show();
 
     // Update rainbow cycle
@@ -455,6 +499,28 @@ void led_init()
         temp += 1;
     }
 }
+
+void led_pattern(int r, int g, int b, int r_, int g_, int b_)
+{   
+    int led_num = 2;
+    for (int i = 0; i < 16; i++)
+    {
+        if (led_num < 3)
+        {
+            pixels.setPixelColor(i, pixels.Color(r_, g_, b_, 255));
+        }
+        else
+        {
+            pixels.setPixelColor(i, pixels.Color(r, g, b, 255));
+        }
+        if (led_num > 6)
+        {
+          led_num = -1;
+        }
+    led_num += 1;
+    }
+}
+
 
 // -------------------- ACCELEROMETRE --------------------
 
