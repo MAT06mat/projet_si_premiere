@@ -8,13 +8,22 @@
 
 <ColorButtons>:
     spacing: self.cd.width / 4
-    padding: self.cd.width / 4
+    padding: [self.cd.width / 4, 0, ]
+
+<MotorButtons>:
+    spacing: self.b1.width / 4
+    padding: [self.b1.width / 4, 0, ]
+
+<MyLabel>:
+    color: (0, 0, 0, 1)
+    font_size: self.width / self.s
 
 <BackButton>:
     height: self.width
 
 <ButtonTemplate>:
     color: (0, 0, 0, 1)
+    font_size: self.height / 3
     canvas.before:
         Color:
             rgba: (0.8, 0.8, 0.8, 8)

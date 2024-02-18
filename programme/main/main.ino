@@ -15,6 +15,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ80
 uint32_t firstPixelHue = 0;
 int firstPixel = 0;
 int maxOpacity = 255;
+int Brightness = 20;
 int opacities[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // -------------------- ACCELEROMETRE --------------------
@@ -94,7 +95,7 @@ void setup()
         }
     #endif
 
-    pixels.setBrightness(20);
+    pixels.setBrightness(Brightness);
     pixels.begin();
     led_init();
 
@@ -212,6 +213,31 @@ void loop()
         {
             dcc = true;
         }
+        else if (test(recept, "m:") and client_connected)
+        {
+            if (test(recept, "d"))
+            {
+                pos_right += 20;
+                pos_left += 20;
+                pos_null += 20;
+                go_pos += 20;
+            }
+            else if (test(recept, "g"))
+            {
+                pos_right -= 20;
+                pos_left -= 20;
+                pos_null -= 20;
+                go_pos -= 20;
+            }
+        }
+        else if (test(recept, "b:") and client_connected)
+        {
+            int positionDeuxPoints = recept.indexOf(':');
+            String valeurString = recept.substring(positionDeuxPoints + 1);
+            int valeurInt = valeurString.toInt();
+            Brightness = valeurInt;
+            pixels.setBrightness(valeurInt);
+        }
         else if (test(recept, "c:") and client_connected)
         {
             if (test(recept, "d"))
@@ -276,8 +302,8 @@ void loop()
         if (client_connected)
         {
             // Laisser une variable à envoyer régulièrement pour ping le client
-            blueToothSerial.print("s:");
-            blueToothSerial.print(last_dcc_iter);
+            blueToothSerial.print("b:");
+            blueToothSerial.print(Brightness);
             blueToothSerial.print('#');
             
             blueToothSerial.print("d:");

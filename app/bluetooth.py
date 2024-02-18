@@ -155,9 +155,8 @@ BlueTooth = BlueToothObject()
 
 class Request:
     func = {"on_recieve": []}
-    acc = 0
     dist = 0
-    last_acc = 0
+    brightness = 0
     loop_iter = 0
     
     def __init__(self) -> None:
@@ -208,13 +207,12 @@ class Request:
                 text.pop(0)
                 text = ":".join(text)
                 print("Print :", text)
-            if text[0] == "s":
-                self.last_acc = self.acc
+            if text[0] == "b":
                 try:
-                    self.acc = int(text[1])
+                    self.brightness = int(text[1])
                 except:
-                    self.acc = 0
-                print("Acc:", self.acc)
+                    self.brightness = 0
+                print("Brightness:", self.brightness)
             if text[0] == "d":
                 try:
                     self.dist = int(text[1])

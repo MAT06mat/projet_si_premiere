@@ -20,7 +20,7 @@ class SpeedLabel(Label):
     
     def on_message(self, text):
         try:
-            self.text = f" Acc: {Api.acc}, Dist: {Api.dist}"
+            self.text = f"Brightness: {Api.brightness}, Dist: {Api.dist}"
         except:
             pass
 
