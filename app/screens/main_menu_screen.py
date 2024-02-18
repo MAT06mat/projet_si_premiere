@@ -14,13 +14,13 @@ Builder.load_file("screens/main_menu_screen.kv")
 class SpeedLabel(Label):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Api.bind(self.on_message)
         self.text = ""
-        Clock.schedule_interval(self.on_message, 1/60)
+        Clock.schedule_interval(self.loop, 1/60)
     
-    def on_message(self, text):
+    def loop(self, text):
         try:
             self.text = f"Brightness: {Api.brightness}, Dist: {Api.dist}"
+            self.font_size = self.parent.width / 15
         except:
             pass
 

@@ -43,7 +43,7 @@ class ColorButtons(StackLayout):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.size_hint = (1, 0.16)
+        self.size_hint = (1, 0.12)
         self.cd = ButtonTemplate(var="c", value="d", text="Defaut", size_hint=(1/3, 0.5))
         self.c1 = ButtonTemplate(var="c", value="y", text="Jaune", size_hint=(1/3, 0.5))
         self.c2 = ButtonTemplate(var="c", value="g", text="Vert", size_hint=(1/3, 0.5))
@@ -102,23 +102,24 @@ class BoxScreen(BoxLayout):
         super().__init__(**kwargs)
         self.size_hint = (1, 1)
         self.orientation = "vertical"
-        self.title_label = MyLabel(text="Réglages", size_hint=(1, 0.1), s=10)
+        self.title_label = MyLabel(text="Réglages", size_hint=(1, 0.1), s=10, color=(0, 0, 0, 1))
         self.add_widget(self.title_label)
         self.add_widget(MyLabel(text="", size_hint=(1, 0.02), s=12))
-        self.color_label = MyLabel(text="Thèmes de couleurs", size_hint=(1, 0.12), s=12)
+        self.color_label = MyLabel(text="Thèmes de couleurs", size_hint=(1, 0.12), s=12, color=(0.2, 0.2, 0.2, 1))
         self.add_widget(self.color_label)
         self.color_buttons = ColorButtons()
         self.add_widget(self.color_buttons)
         self.add_widget(MyLabel(text="", size_hint=(1, 0.1), s=12))
-        self.motor_label = MyLabel(text="Synchroniser le moteur", size_hint=(1, 0.12), s=12)
+        self.motor_label = MyLabel(text="Synchroniser le moteur", size_hint=(1, 0.12), s=12, color=(0.2, 0.2, 0.2, 1))
         self.add_widget(self.motor_label)
         self.motor_buttons = MotorButtons()
         self.add_widget(self.motor_buttons)
         self.add_widget(MyLabel(text="", size_hint=(1, 0.1), s=12))
-        self.lum_label = MyLabel(text=f"", size_hint=(1, 0.12), s=12)
+        self.lum_label = MyLabel(text=f"", size_hint=(1, 0.12), s=12, color=(0.2, 0.2, 0.2, 1))
         self.add_widget(self.lum_label)
         self.lum_buttons = LumButtons()
         self.add_widget(self.lum_buttons)
+        self.add_widget(MyLabel(text="", size_hint=(1, 0.04), s=12))
         Clock.schedule_interval(self.loop, 1/60)
     
     def loop(self, *args):
