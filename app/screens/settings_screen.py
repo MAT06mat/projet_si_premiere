@@ -102,7 +102,7 @@ class BoxScreen(BoxLayout):
         super().__init__(**kwargs)
         self.size_hint = (1, 1)
         self.orientation = "vertical"
-        self.title_label = MyLabel(text="Réglages", size_hint=(1, 0.1), s=10, color=(0, 0, 0, 1))
+        self.title_label = MyLabel(text="Réglages", size_hint=(1, 0.1), s=10, color=(0, 0, 0, 1), bold=True)
         self.add_widget(self.title_label)
         self.add_widget(MyLabel(text="", size_hint=(1, 0.02), s=12))
         self.color_label = MyLabel(text="Thèmes de couleurs", size_hint=(1, 0.12), s=12, color=(0.2, 0.2, 0.2, 1))

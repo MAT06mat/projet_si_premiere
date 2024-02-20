@@ -11,15 +11,22 @@ from bluetooth import BlueTooth, Api
 Builder.load_file("screens/main_menu_screen.kv")
 
 
-class SpeedLabel(Label):
+class InfoLabel(Label):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.text = ""
-        Clock.schedule_interval(self.loop, 1/60)
+        Clock.schedule_interval(self.loop, 1/30)
     
     def loop(self, text):
         try:
-            self.text = f"Brightness: {Api.brightness}, Dist: {Api.dist}"
+            d = Api.dist
+            if d < 510:
+                d_in_m = d // 100
+                d_in_cm = d % 100
+                str_d = f"{d_in_m} m {d_in_cm} cm"
+            else:
+                str_d = "> 5 m"
+            self.text = f"Distance actuel avec la voiture de derrière :\n{str_d}"
             self.font_size = self.parent.width / 15
         except:
             pass
@@ -156,14 +163,14 @@ class SlideBar(RelativeLayout):
 class MainMenuScreen(RelativeLayout):
     def __init__(self, **kw):
         super().__init__(**kw)
-        self.speed_label = SpeedLabel()
+        self.info_label = InfoLabel()
         self.left_arrow = LeftArrow()
         self.right_arrow = RightArrow()
         self.stop_button = StopButton()
         self.warning_button = WarningButton()
         self.setting_button = SettingButton()
         self.slide_bar = SlideBar()
-        self.add_widget(self.speed_label)
+        self.add_widget(self.info_label)
         self.add_widget(self.left_arrow)
         self.add_widget(self.right_arrow)
         self.add_widget(self.stop_button)
