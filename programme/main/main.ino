@@ -43,6 +43,8 @@ const unsigned long timeoutDuration = 4000;
 
 #include "Ultrasonic.h"
 Ultrasonic ultrasonic(7);
+const int dist_secure = 300;
+int last_dist = 0;
 
 // -------------------- MOTOR --------------------
 
@@ -52,9 +54,9 @@ MotorDriver motor;
 
 // set speed to 120 revolutions per minute
 uint16_t rpm = 120;
-int pos_right = 20*50;
-int pos_left = -20*50;
-int pos_null = 0;
+const int pos_right = 20*50;
+const int pos_left = -20*50;
+const int pos_null = 0;
 int go_pos = 0;
 int pos = 0;
 
@@ -306,8 +308,9 @@ void loop()
             blueToothSerial.print(Brightness);
             blueToothSerial.print('#');
             
+            last_dist = ultrasonic.MeasureInCentimeters();
             blueToothSerial.print("d:");
-            blueToothSerial.print(ultrasonic.MeasureInCentimeters());
+            blueToothSerial.print(last_dist);
             blueToothSerial.print('#');
         }
 
@@ -349,7 +352,7 @@ void led()
     // Reset all Led
     led_clean();
 
-    if ((last_dcc_iter >= 0 and client_connected) or dcc)
+    if ((last_dcc_iter >= 0 and client_connected) or dcc) // Décélération
     {
         switch(led_mode)
         {
@@ -373,7 +376,7 @@ void led()
                 break;
         }
     }
-    if (right or warning)
+    if (right or warning or 0 < last_dist < dist_secure)
     {
         if (iter_led <= 40)
         {   
@@ -404,7 +407,7 @@ void led()
             led_show(9, 14, 0, 0, 0, 0);
         }
     }
-    if (left or warning)
+    if (left or warning or 0 < last_dist < dist_secure)
     {
         if (iter_led <= 40)
         {
@@ -676,6 +679,7 @@ void reset_led()
     right = false;
     warning = false;
     dcc = false;
+    last_dist = 0;
 }
 
 String bluetooth_recv()
