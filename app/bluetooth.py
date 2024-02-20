@@ -197,6 +197,8 @@ class Request:
                 if screen.name == "Connection":
                     screen.children[0].connect_message.message(message)
         app.manager.pop_all()
+        self.dist = 0
+        self.brightness = 0
 
     def on_recieve(self, text):
         try:

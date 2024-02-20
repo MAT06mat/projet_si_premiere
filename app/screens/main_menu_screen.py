@@ -3,12 +3,27 @@ from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.label import Label
 from kivy.animation import Animation
 from kivy.app import App
+from kivy.core.window import Window
 from kivy.clock import Clock
 
 from custom_resize_button import CustomToggleButton, CustomResizeButton
 from bluetooth import BlueTooth, Api
 
 Builder.load_file("screens/main_menu_screen.kv")
+
+
+class AlertLabel(Label):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        Clock.schedule_interval(self.loop, 1/30)
+    
+    def loop(self, *args):
+        if 0 < Api.dist < 300 and BlueTooth.is_connect:
+            self.text = "[b][ALERTE][/b]: Distance de sécurité non-respecté !"
+            Window.clearcolor = (1, 0.9, 0.9, 1)
+        else:
+            self.text = ""
+            Window.clearcolor = (1, 1, 1, 1)
 
 
 class InfoLabel(Label):
@@ -163,6 +178,7 @@ class SlideBar(RelativeLayout):
 class MainMenuScreen(RelativeLayout):
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.alert_label = AlertLabel()
         self.info_label = InfoLabel()
         self.left_arrow = LeftArrow()
         self.right_arrow = RightArrow()
@@ -170,6 +186,7 @@ class MainMenuScreen(RelativeLayout):
         self.warning_button = WarningButton()
         self.setting_button = SettingButton()
         self.slide_bar = SlideBar()
+        self.add_widget(self.alert_label)
         self.add_widget(self.info_label)
         self.add_widget(self.left_arrow)
         self.add_widget(self.right_arrow)
