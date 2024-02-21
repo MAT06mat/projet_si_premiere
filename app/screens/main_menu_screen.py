@@ -18,9 +18,12 @@ class AlertLabel(Label):
         Clock.schedule_interval(self.loop, 1/30)
     
     def loop(self, *args):
-        if 0 < Api.dist < 300 and BlueTooth.is_connect:
+        if 0 < Api.dist < 150 and BlueTooth.is_connect:
             self.text = "[b][ALERTE][/b]: Distance de sécurité non-respecté !"
             Window.clearcolor = (1, 0.9, 0.9, 1)
+        elif 150 <= Api.dist < 400 and BlueTooth.is_connect:
+            self.text = "[b][ALERTE][/b]: Danger distance faible !"
+            Window.clearcolor = (1, 1, 1, 1)
         else:
             self.text = ""
             Window.clearcolor = (1, 1, 1, 1)
