@@ -39,7 +39,7 @@ bool client_connected = false;
 unsigned long lastCommunicationTime = 0;
 const unsigned long timeoutDuration = 4000;
 
-// -------------------- BLUETOOTH --------------------
+// -------------------- CAPTEUR ULTRA-SONS --------------------
 
 #include "Ultrasonic.h"
 Ultrasonic ultrasonic(7);
