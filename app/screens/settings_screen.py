@@ -44,7 +44,7 @@ class ColorButtons(StackLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (1, 0.12)
-        self.cd = ButtonTemplate(var="c", value="d", text="Defaut", size_hint=(1/3, 0.5))
+        self.cd = ButtonTemplate(var="c", value="d", text="Par defaut", size_hint=(1/3, 0.5))
         self.c1 = ButtonTemplate(var="c", value="y", text="Jaune", size_hint=(1/3, 0.5))
         self.c2 = ButtonTemplate(var="c", value="g", text="Vert", size_hint=(1/3, 0.5))
         self.c3 = ButtonTemplate(var="c", value="b", text="Bleu", size_hint=(1/3, 0.5))

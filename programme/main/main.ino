@@ -43,8 +43,6 @@ const unsigned long timeoutDuration = 4000;
 
 #include "Ultrasonic.h"
 Ultrasonic ultrasonic(7);
-const int dist_secure = 300;
-int last_dist = 0;
 
 // -------------------- MOTOR --------------------
 
@@ -54,9 +52,9 @@ MotorDriver motor;
 
 // set speed to 120 revolutions per minute
 uint16_t rpm = 120;
-const int pos_right = 20*50;
-const int pos_left = -20*50;
-const int pos_null = 0;
+int pos_right = 20*50;
+int pos_left = -20*50;
+int pos_null = 0;
 int go_pos = 0;
 int pos = 0;
 
@@ -308,9 +306,8 @@ void loop()
             blueToothSerial.print(Brightness);
             blueToothSerial.print('#');
             
-            last_dist = ultrasonic.MeasureInCentimeters();
             blueToothSerial.print("d:");
-            blueToothSerial.print(last_dist);
+            blueToothSerial.print(ultrasonic.MeasureInCentimeters());
             blueToothSerial.print('#');
         }
 
@@ -376,7 +373,7 @@ void led()
                 break;
         }
     }
-    if (right or warning or 0 < last_dist < dist_secure)
+    if (right or warning)
     {
         if (iter_led <= 40)
         {   
@@ -407,7 +404,7 @@ void led()
             led_show(9, 14, 0, 0, 0, 0);
         }
     }
-    if (left or warning or 0 < last_dist < dist_secure)
+    if (left or warning)
     {
         if (iter_led <= 40)
         {
@@ -679,7 +676,6 @@ void reset_led()
     right = false;
     warning = false;
     dcc = false;
-    last_dist = 0;
 }
 
 String bluetooth_recv()

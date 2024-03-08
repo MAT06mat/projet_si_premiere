@@ -203,7 +203,6 @@ class Request:
     def on_recieve(self, text):
         try:
             # text = "print:Bonjour"
-            # text = "set:led:HIGH"
             text = text.split(':')
             if text[0] == "p":
                 text.pop(0)
