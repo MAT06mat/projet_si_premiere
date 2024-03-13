@@ -39,7 +39,7 @@ bool client_connected = false;
 unsigned long lastCommunicationTime = 0;
 const unsigned long timeoutDuration = 4000;
 
-// -------------------- BLUETOOTH --------------------
+// -------------------- CAPTEUR ULTRA-SONS --------------------
 
 #include "Ultrasonic.h"
 Ultrasonic ultrasonic(7);
@@ -52,8 +52,8 @@ MotorDriver motor;
 
 // set speed to 120 revolutions per minute
 uint16_t rpm = 120;
-int pos_right = 20*50;
-int pos_left = -20*50;
+int pos_right = 20*30;
+int pos_left = -20*30;
 int pos_null = 0;
 int go_pos = 0;
 int pos = 0;
@@ -348,7 +348,10 @@ void led()
 
     // Reset all Led
     led_clean();
-
+    //Serial.print("Last Dcc iter: ");
+    //Serial.println(last_dcc_iter);
+    //Serial.print("Dcc: ");
+    //Serial.println(dcc);
     if ((last_dcc_iter >= 0 and client_connected) or dcc) // Décélération
     {
         switch(led_mode)
@@ -627,6 +630,8 @@ void calibrate(uint32_t timeout)
 void get_acceleration()
 {
     int acc_x = icm20600.getAccelerationX() - x_moyenne;
+    //Serial.print("Acc_x: ");
+    //Serial.println(acc_x);
     if (acc_x < -350)
     {
         last_dcc_iter = 0;
